@@ -2,25 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Color Palette - Professional Dark Theme
-  static const Color darkBackground = Color(0xFF0A0E14);
-  static const Color cardBackground = Color(0xFF151B26);
-  static const Color surfaceColor = Color(0xFF1E2530);
+  // Color Palette - Professional Black/White Theme
+  static const Color darkBackground = Color(0xFF000000); // Pure Black
+  static const Color cardBackground = Color(0xFF121212); // Dark Grey
+  static const Color surfaceColor = Color(0xFF1E1E1E); // Lighter Grey
   
   // Gradient Colors
-  static const Color gradientStart = Color(0xFFFF6B3D);
-  static const Color gradientEnd = Color(0xFFFF9068);
+  static const Color gradientStart = Color(0xFFFFFFFF); // White
+  static const Color gradientEnd = Color(0xFFB0B0B0); // Silver
   
   // Status Colors
-  static const Color successGreen = Color(0xFF4CAF50);
-  static const Color warningYellow = Color(0xFFFFB74D);
-  static const Color criticalRed = Color(0xFFEF5350);
-  static const Color infoBlue = Color(0xFF42A5F5);
+  static const Color successGreen = Color(0xFF4CAF50); // Keep for semantics
+  static const Color warningYellow = Color(0xFFFFB74D); // Keep for semantics
+  static const Color criticalRed = Color(0xFFEF5350); // Keep for semantics
+  static const Color infoBlue = Color(0xFF42A5F5); // Keep for semantics
   
   // Text Colors
   static const Color textPrimary = Color(0xFFFFFFFF);
-  static const Color textSecondary = Color(0xFFB0B7C3);
-  static const Color textHint = Color(0xFF6C7A8D);
+  static const Color textSecondary = Color(0xFFB0B0B0); // Pure Grey
+  static const Color textHint = Color(0xFF808080); // Grey
 
   static ThemeData get darkTheme {
     return ThemeData(
@@ -29,8 +29,8 @@ class AppTheme {
       scaffoldBackgroundColor: darkBackground,
       
       colorScheme: const ColorScheme.dark(
-        primary: gradientStart,
-        secondary: gradientEnd,
+        primary: gradientStart, // White primary
+        secondary: gradientEnd, // Silver secondary
         surface: cardBackground,
         background: darkBackground,
         error: criticalRed,
@@ -94,7 +94,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: cardBackground,
         elevation: 4,
-        shadowColor: Colors.black.withValues(alpha: 0.3),
+        shadowColor: Colors.white.withValues(alpha: 0.1), // Subtle white shadow for visibility
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -102,8 +102,8 @@ class AppTheme {
       
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: gradientStart,
-          foregroundColor: Colors.white,
+          backgroundColor: gradientStart, // White button
+          foregroundColor: Colors.black, // Black text
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -129,7 +129,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: gradientStart, width: 2),
+          borderSide: const BorderSide(color: gradientStart, width: 2), // White border
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         hintStyle: const TextStyle(color: textHint),

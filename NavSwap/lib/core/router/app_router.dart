@@ -20,20 +20,22 @@ import '../services/auth_service.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authService = ref.watch(authServiceProvider);
-  
+
   return GoRouter(
     initialLocation: '/splash',
     debugLogDiagnostics: true,
     redirect: (context, state) {
       final isAuthenticated = authService.isAuthenticated;
-      final isAuthRoute = state.matchedLocation.startsWith('/auth') || 
-                         state.matchedLocation == '/splash';
-      
+      final isAuthRoute = state.matchedLocation.startsWith('/auth') ||
+          state.matchedLocation == '/splash';
+
       if (!isAuthenticated && !isAuthRoute) {
         return '/auth/login';
       }
-      
-      if (isAuthenticated && isAuthRoute && state.matchedLocation != '/splash') {
+
+      if (isAuthenticated &&
+          isAuthRoute &&
+          state.matchedLocation != '/splash') {
         final userRole = authService.currentUser?.role;
         if (userRole == 'customer') {
           return '/customer/home';
@@ -41,7 +43,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return '/transporter/dashboard';
         }
       }
-      
+
       return null;
     },
     routes: [
@@ -50,7 +52,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'splash',
         builder: (context, state) => const SplashScreen(),
       ),
-      
+
       // Auth Routes
       GoRoute(
         path: '/auth/login',
@@ -75,7 +77,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'roleSelect',
         builder: (context, state) => const RoleSelectionScreen(),
       ),
-      
+
       // Customer Routes
       GoRoute(
         path: '/customer/home',
@@ -105,7 +107,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'aiChat',
         builder: (context, state) => const AiChatScreen(),
       ),
-      
+
       // Transporter Routes
       GoRoute(
         path: '/transporter/dashboard',
