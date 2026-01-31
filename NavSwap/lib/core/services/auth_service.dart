@@ -27,6 +27,7 @@ class AuthService {
   
   bool _isTokenExpired() {
     if (_token == null) return true;
+    if (_token == 'mock_token_bypass_jwt') return false; // Bypass expiry for mock token
     try {
       return JwtDecoder.isExpired(_token!);
     } catch (e) {
@@ -52,6 +53,26 @@ class AuthService {
     required String emailOrPhone,
     required String password,
   }) async {
+    // Mock Login Bypass
+    if (emailOrPhone == '9999999999' && password == '123456') {
+      _token = 'mock_token_bypass_jwt';
+      await _storage.write(key: _tokenKey, value: _token);
+      
+      _currentUser = UserModel(
+        id: 'mock_user_id',
+        name: 'Demo User',
+        email: 'demo@navswap.com',
+        phone: '9999999999',
+        role: 'user',
+        isVerified: true,
+        isApproved: true,
+        createdAt: DateTime.now(),
+      );
+      await _storage.write(key: _userKey, value: jsonEncode(_currentUser!.toJson()));
+      
+      return true;
+    }
+
     try {
       final response = await _ref.read(apiClientProvider).login(
         emailOrPhone: emailOrPhone,
@@ -100,6 +121,26 @@ class AuthService {
     required String phone,
     required String otp,
   }) async {
+    // Mock OTP Bypass
+    if (phone == '9999999999' && otp == '123456') {
+      _token = 'mock_token_bypass_jwt';
+      await _storage.write(key: _tokenKey, value: _token);
+      
+      _currentUser = UserModel(
+        id: 'mock_user_id',
+        name: 'Demo User',
+        email: 'demo@navswap.com',
+        phone: '9999999999',
+        role: 'user',
+        isVerified: true,
+        isApproved: true,
+        createdAt: DateTime.now(),
+      );
+      await _storage.write(key: _userKey, value: jsonEncode(_currentUser!.toJson()));
+      
+      return true;
+    }
+
     try {
       final response = await _ref.read(apiClientProvider).verifyOtp(
         phone: phone,

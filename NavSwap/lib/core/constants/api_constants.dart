@@ -1,8 +1,11 @@
 class ApiConstants {
   // Base URLs
-  static const String apiGatewayBaseUrl = 'http://localhost:3000';
-  static const String recommendationServiceUrl = 'http://localhost:3005';
-  static const String ingestionServiceUrl = 'http://localhost:3001';
+  static const String apiGatewayBaseUrl =
+      'http://ec2-52-89-235-59.us-west-2.compute.amazonaws.com:3000 ';
+  static const String recommendationServiceUrl =
+      'http://ec2-52-89-235-59.us-west-2.compute.amazonaws.com:3005';
+  static const String ingestionServiceUrl =
+      'http://ec2-52-89-235-59.us-west-2.compute.amazonaws.com:3001';
 
   // API Endpoints - Gateway (3000)
   static const String healthEndpoint = '/health';
