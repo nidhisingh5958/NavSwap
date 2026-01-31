@@ -28,7 +28,7 @@ class AppTheme {
         centerTitle: false,
         foregroundColor: AppColors.ink,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: Colors.white,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -72,7 +72,7 @@ class AppTheme {
         centerTitle: false,
         foregroundColor: Colors.white,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.graphite,
         elevation: 0,
         shape: RoundedRectangleBorder(

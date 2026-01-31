@@ -48,14 +48,37 @@ extension RoleX on Role {
 
 class AppState extends ChangeNotifier {
   Role _role = Role.customer;
+  ThemeMode? _themeOverride;
 
   Role get role => _role;
 
-  ThemeMode get themeMode =>
-      _role.prefersDarkMode ? ThemeMode.dark : ThemeMode.light;
+  ThemeMode get themeMode {
+    if (_themeOverride != null) {
+      return _themeOverride!;
+    }
+    return _role.prefersDarkMode ? ThemeMode.dark : ThemeMode.light;
+  }
+
+  bool get isDarkMode => themeMode == ThemeMode.dark;
 
   void setRole(Role role) {
     _role = role;
+    notifyListeners();
+  }
+
+  void setThemeMode(ThemeMode mode) {
+    _themeOverride = mode;
+    notifyListeners();
+  }
+
+  void clearThemeOverride() {
+    _themeOverride = null;
+    notifyListeners();
+  }
+
+  void toggleTheme() {
+    final nextMode = isDarkMode ? ThemeMode.light : ThemeMode.dark;
+    _themeOverride = nextMode;
     notifyListeners();
   }
 }
