@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/constants/app_spacing.dart';
 import '../core/theme/app_text_styles.dart';
-import '../providers/app_state.dart';
+import '../providers/theme_provider.dart';
 
-class AppScaffold extends StatelessWidget {
+class AppScaffold extends ConsumerWidget {
   const AppScaffold({
     super.key,
     required this.title,
@@ -20,7 +21,8 @@ class AppScaffold extends StatelessWidget {
   final bool showThemeToggle;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeState = ref.watch(themeProvider);
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
       body: SafeArea(
@@ -45,9 +47,9 @@ class AppScaffold extends StatelessWidget {
                         const SizedBox(height: 12),
                         Text(
                           subtitle.toUpperCase(),
-                          style: AppTextStyles.title(
+                          style: AppTextStyles.labelSmall(
                             textTheme.bodySmall?.color ?? Colors.grey,
-                          ),
+                          ).copyWith(letterSpacing: 1.2),
                         ),
                       ],
                     ),
@@ -57,11 +59,10 @@ class AppScaffold extends StatelessWidget {
                     IconButton(
                       tooltip: 'Toggle theme',
                       icon: Icon(
-                        AppStateScope.of(context).isDarkMode
-                            ? Icons.light_mode
-                            : Icons.dark_mode,
+                        themeState.isDark ? Icons.light_mode : Icons.dark_mode,
                       ),
-                      onPressed: () => AppStateScope.of(context).toggleTheme(),
+                      onPressed: () =>
+                          ref.read(themeProvider.notifier).toggleTheme(),
                     ),
                 ],
               ),
