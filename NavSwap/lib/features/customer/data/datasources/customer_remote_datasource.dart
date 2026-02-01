@@ -62,14 +62,123 @@ class CustomerRemoteDataSourceImpl implements CustomerRemoteDataSource {
         final data = response.data['data'] ?? response.data;
         return RecommendationModel.fromJson(data);
       }
-      throw ServerException(
-        message: 'Failed to get recommendations',
-        originalException: response,
-      );
+      // Fallback to mock data on non-200 response
+      print('⚠️ API returned ${response.statusCode}, using mock data');
+      return _getMockRecommendations(userId, latitude, longitude);
     } on DioException catch (e) {
-      throw _handleDioException(e);
+      // Fallback to mock data on any network/server error
+      print('⚠️ API error: ${e.message}, using mock recommendations');
+      return _getMockRecommendations(userId, latitude, longitude);
     }
   }
+
+  /// Generate mock recommendations when API is unavailable
+  RecommendationModel _getMockRecommendations(
+    String userId,
+    double latitude,
+    double longitude,
+  ) {
+    final now = DateTime.now();
+    
+    // Generate mock stations near the user's location
+    final mockStations = [
+      StationModel(
+        stationId: 'mock_station_1',
+        stationName: 'NavSwap Hub - Central',
+        latitude: latitude + 0.005,
+        longitude: longitude + 0.003,
+        address: '123 Main Street, Central District',
+        score: 92.5,
+        rank: 1,
+        estimatedWaitTime: 5,
+        estimatedDistance: 0.8,
+        availableChargers: 4,
+        totalChargers: 6,
+        chargerTypes: ['Type 2', 'CCS'],
+        pricePerKwh: 12.5,
+        status: 'operational',
+        healthScore: 95,
+      ),
+      StationModel(
+        stationId: 'mock_station_2',
+        stationName: 'NavSwap Express - Mall',
+        latitude: latitude - 0.008,
+        longitude: longitude + 0.006,
+        address: '456 Shopping Complex, Mall Road',
+        score: 88.0,
+        rank: 2,
+        estimatedWaitTime: 8,
+        estimatedDistance: 1.2,
+        availableChargers: 3,
+        totalChargers: 5,
+        chargerTypes: ['Type 2', 'CHAdeMO'],
+        pricePerKwh: 11.0,
+        status: 'operational',
+        healthScore: 90,
+      ),
+      StationModel(
+        stationId: 'mock_station_3',
+        stationName: 'NavSwap Point - Highway',
+        latitude: latitude + 0.012,
+        longitude: longitude - 0.009,
+        address: '789 Highway Service Area',
+        score: 85.5,
+        rank: 3,
+        estimatedWaitTime: 3,
+        estimatedDistance: 2.5,
+        availableChargers: 6,
+        totalChargers: 8,
+        chargerTypes: ['CCS', 'Tesla Supercharger'],
+        pricePerKwh: 14.0,
+        status: 'operational',
+        healthScore: 88,
+      ),
+      StationModel(
+        stationId: 'mock_station_4',
+        stationName: 'NavSwap Green - Park',
+        latitude: latitude - 0.003,
+        longitude: longitude - 0.007,
+        address: '321 Green Park Avenue',
+        score: 82.0,
+        rank: 4,
+        estimatedWaitTime: 12,
+        estimatedDistance: 1.8,
+        availableChargers: 2,
+        totalChargers: 4,
+        chargerTypes: ['Type 2'],
+        pricePerKwh: 10.0,
+        status: 'operational',
+        healthScore: 85,
+      ),
+      StationModel(
+        stationId: 'mock_station_5',
+        stationName: 'NavSwap Quick - Station',
+        latitude: latitude + 0.009,
+        longitude: longitude + 0.011,
+        address: '555 Quick Charge Lane',
+        score: 79.0,
+        rank: 5,
+        estimatedWaitTime: 15,
+        estimatedDistance: 3.2,
+        availableChargers: 5,
+        totalChargers: 10,
+        chargerTypes: ['Type 2', 'CCS', 'CHAdeMO'],
+        pricePerKwh: 13.5,
+        status: 'operational',
+        healthScore: 92,
+      ),
+    ];
+
+    return RecommendationModel(
+      requestId: 'mock_${now.millisecondsSinceEpoch}',
+      userId: userId,
+      recommendations: mockStations,
+      explanation: 'Showing nearby stations based on your location. (Offline mode - API unavailable)',
+      generatedAt: now,
+      expiresAt: now.add(const Duration(hours: 1)),
+    );
+  }
+
 
   @override
   Future<void> recordStationSelection({

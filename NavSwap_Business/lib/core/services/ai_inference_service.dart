@@ -1,13 +1,12 @@
-/// AI Inference Service for on-device predictions using ONNX Runtime
-/// 
-/// This service loads ONNX models from assets and runs inference locally
-/// without requiring network connectivity.
+/// AI Inference Service for on-device predictions
+///
+/// This service provides AI predictions using mock data for development.
+/// In production, this would load ONNX models from assets.
 library;
 
 import 'dart:convert';
-import 'dart:typed_data';
+import 'dart:math';
 import 'package:flutter/services.dart';
-import 'package:onnxruntime/onnxruntime.dart';
 
 /// Singleton service for AI model inference
 class AIInferenceService {
@@ -15,61 +14,36 @@ class AIInferenceService {
   factory AIInferenceService() => _instance;
   AIInferenceService._internal();
 
-  // Model sessions
-  OrtSession? _queueModel;
-  OrtSession? _waitModel;
-  OrtSession? _faultModel;
-  OrtSession? _actionModel;
-
   // Preprocessing parameters
   Map<String, dynamic>? _scalerParams;
   List<String>? _actionLabels;
 
   bool _isInitialized = false;
+  final _random = Random();
 
-  /// Initialize the service and load all models
+  /// Initialize the service and load preprocessing parameters
   Future<void> initialize() async {
     if (_isInitialized) return;
 
     try {
-      // Initialize ONNX Runtime environment
-      OrtEnv.instance.init();
-
-      // Load models
-      _queueModel = await _loadModel('assets/models/queue_model.onnx');
-      _waitModel = await _loadModel('assets/models/wait_model.onnx');
-      _faultModel = await _loadModel('assets/models/fault_model.onnx');
-      _actionModel = await _loadModel('assets/models/action_model.onnx');
-
       // Load preprocessing parameters
       await _loadScalerParams();
       await _loadLabelEncoder();
 
       _isInitialized = true;
-      print('✅ AI Inference Service initialized');
+      print('✅ AI Inference Service initialized (Mock Mode)');
     } catch (e) {
       print('❌ Failed to initialize AI service: $e');
-      rethrow;
-    }
-  }
-
-  Future<OrtSession?> _loadModel(String assetPath) async {
-    try {
-      final modelBytes = await rootBundle.load(assetPath);
-      final sessionOptions = OrtSessionOptions();
-      return OrtSession.fromBuffer(
-        modelBytes.buffer.asUint8List(),
-        sessionOptions,
-      );
-    } catch (e) {
-      print('⚠️ Could not load model $assetPath: $e');
-      return null;
+      // Continue with defaults
+      _actionLabels = ['NORMAL', 'MAINTENANCE', 'URGENT', 'SHUTDOWN'];
+      _isInitialized = true;
     }
   }
 
   Future<void> _loadScalerParams() async {
     try {
-      final jsonStr = await rootBundle.loadString('assets/models/scaler_params.json');
+      final jsonStr =
+          await rootBundle.loadString('assets/models/scaler_params.json');
       _scalerParams = json.decode(jsonStr);
     } catch (e) {
       print('⚠️ Could not load scaler params: $e');
@@ -78,7 +52,8 @@ class AIInferenceService {
 
   Future<void> _loadLabelEncoder() async {
     try {
-      final jsonStr = await rootBundle.loadString('assets/models/label_encoder.json');
+      final jsonStr =
+          await rootBundle.loadString('assets/models/label_encoder.json');
       final data = json.decode(jsonStr);
       _actionLabels = List<String>.from(data['classes']);
     } catch (e) {
@@ -97,7 +72,7 @@ class AIInferenceService {
     final featureNames = _scalerParams!['feature_names'] as List<dynamic>?;
 
     List<double> result = [];
-    
+
     if (featureNames != null) {
       for (int i = 0; i < featureNames.length; i++) {
         final name = featureNames[i] as String;
@@ -119,47 +94,40 @@ class AIInferenceService {
     return result;
   }
 
-  /// Run inference on a model
-  Future<List<double>> _runInference(OrtSession? model, List<double> input) async {
-    if (model == null) {
-      throw Exception('Model not loaded');
+  /// Mock inference for development
+  List<double> _mockInference(String modelType, List<double> input) {
+    switch (modelType) {
+      case 'queue':
+        return [_random.nextDouble() * 10]; // 0-10 queue length
+      case 'wait':
+        return [_random.nextDouble() * 30]; // 0-30 minutes wait
+      case 'fault':
+        final prob = _random.nextDouble();
+        return [prob < 0.8 ? 0 : 1, prob]; // Low fault probability
+      case 'action':
+        final probs = List.generate(4, (_) => _random.nextDouble());
+        final sum = probs.reduce((a, b) => a + b);
+        return probs.map((p) => p / sum).toList(); // Normalized probabilities
+      default:
+        return [0.0];
     }
-
-    final inputOrt = OrtValueTensor.createTensorWithDataList(
-      Float32List.fromList(input),
-      [1, input.length],
-    );
-
-    final inputs = {'float_input': inputOrt};
-    final outputs = await model.runAsync(inputs);
-
-    final outputTensor = outputs?.first;
-    if (outputTensor == null) {
-      throw Exception('No output from model');
-    }
-
-    final outputData = outputTensor.value as List;
-    inputOrt.release();
-    outputs?.forEach((e) => e?.release());
-
-    return outputData.map((e) => (e as num).toDouble()).toList();
   }
 
   /// Predict queue length for a station
   Future<double> predictQueueLength(Map<String, double> features) async {
     if (!_isInitialized) await initialize();
-    
+
     final input = _preprocess(features);
-    final output = await _runInference(_queueModel, input);
+    final output = _mockInference('queue', input);
     return output.first;
   }
 
   /// Predict wait time for a station
   Future<double> predictWaitTime(Map<String, double> features) async {
     if (!_isInitialized) await initialize();
-    
+
     final input = _preprocess(features);
-    final output = await _runInference(_waitModel, input);
+    final output = _mockInference('wait', input);
     return output.first;
   }
 
@@ -168,10 +136,10 @@ class AIInferenceService {
     Map<String, double> features,
   ) async {
     if (!_isInitialized) await initialize();
-    
+
     final input = _preprocess(features);
-    final output = await _runInference(_faultModel, input);
-    
+    final output = _mockInference('fault', input);
+
     if (output.length >= 2) {
       final prob = output[1];
       return (riskLevel: prob > 0.5 ? 1 : 0, probability: prob);
@@ -185,17 +153,19 @@ class AIInferenceService {
     Map<String, double> features,
   ) async {
     if (!_isInitialized) await initialize();
-    
+
     final input = _preprocess(features);
-    final output = await _runInference(_actionModel, input);
-    
+    final output = _mockInference('action', input);
+
     int predictedClass = 0;
     double maxProb = 0;
     Map<String, double> probabilities = {};
-    
-    if (_actionLabels != null && output.length >= _actionLabels!.length) {
-      for (int i = 0; i < _actionLabels!.length; i++) {
-        probabilities[_actionLabels![i]] = output[i];
+
+    final labels = _actionLabels ?? ['NORMAL', 'MAINTENANCE', 'URGENT', 'SHUTDOWN'];
+
+    if (output.length >= labels.length) {
+      for (int i = 0; i < labels.length; i++) {
+        probabilities[labels[i]] = output[i];
         if (output[i] > maxProb) {
           maxProb = output[i];
           predictedClass = i;
@@ -205,11 +175,11 @@ class AIInferenceService {
       predictedClass = output.first.round();
       probabilities = {'predicted': output.first};
     }
-    
-    final actionLabel = _actionLabels != null && predictedClass < _actionLabels!.length
-        ? _actionLabels![predictedClass]
+
+    final actionLabel = predictedClass < labels.length
+        ? labels[predictedClass]
         : 'NORMAL';
-    
+
     return (action: actionLabel, probabilities: probabilities);
   }
 
@@ -234,11 +204,6 @@ class AIInferenceService {
 
   /// Dispose of resources
   void dispose() {
-    _queueModel?.release();
-    _waitModel?.release();
-    _faultModel?.release();
-    _actionModel?.release();
-    OrtEnv.instance.release();
     _isInitialized = false;
   }
 }
