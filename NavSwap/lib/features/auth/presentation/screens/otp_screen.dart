@@ -5,7 +5,7 @@ import '../../../../core/services/auth_service.dart';
 
 class OtpScreen extends ConsumerStatefulWidget {
   final String phoneNumber;
-  
+
   const OtpScreen({super.key, required this.phoneNumber});
 
   @override
@@ -13,7 +13,8 @@ class OtpScreen extends ConsumerStatefulWidget {
 }
 
 class _OtpScreenState extends ConsumerState<OtpScreen> {
-  final List<TextEditingController> _controllers = List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _controllers =
+      List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   bool _isLoading = false;
 
@@ -35,15 +36,15 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     setState(() => _isLoading = true);
 
     final success = await ref.read(authServiceProvider).verifyOtp(
-      phone: widget.phoneNumber,
-      otp: otp,
-    );
+          phone: widget.phoneNumber,
+          otp: otp,
+        );
 
     if (!mounted) return;
     setState(() => _isLoading = false);
 
     if (success) {
-      context.go('/auth/role-select');
+      context.go('/role-select');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Invalid OTP. Please try again.')),
@@ -75,12 +76,10 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               Text(
                 'Enter the 6-digit code sent to ${widget.phoneNumber}',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).textTheme.bodySmall?.color,
-                ),
+                      color: Theme.of(context).textTheme.bodySmall?.color,
+                    ),
               ),
-              
               const SizedBox(height: 48),
-              
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: List.generate(6, (index) {
@@ -113,16 +112,12 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                   );
                 }),
               ),
-              
               const SizedBox(height: 24),
-              
               TextButton(
                 onPressed: () {},
                 child: const Text('Resend OTP'),
               ),
-              
               const Spacer(),
-              
               SizedBox(
                 height: 56,
                 child: ElevatedButton(

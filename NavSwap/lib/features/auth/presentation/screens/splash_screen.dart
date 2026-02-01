@@ -32,10 +32,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       } else if (role == 'transporter') {
         context.go('/transporter/dashboard');
       } else {
-        context.go('/auth/role-select');
+        context.go('/role-select');
       }
     } else {
-      context.go('/auth/role-select');
+      context.go('/role-select');
     }
   }
 

@@ -3,14 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/services/auth_service.dart';
 
-class SignupScreen extends ConsumerStatefulWidget {
-  const SignupScreen({super.key});
+class SignupScreen extends StatefulWidget {
+  final String role;
+
+  const SignupScreen({
+    super.key,
+    required this.role,
+  });
 
   @override
-  ConsumerState<SignupScreen> createState() => _SignupScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends ConsumerState<SignupScreen> {
+class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -19,37 +24,26 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
   Future<void> _handleSignup() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _isLoading = true);
-
-    final success = await ref.read(authServiceProvider).signup(
-      name: _nameController.text.trim(),
-      email: _emailController.text.trim(),
-      phone: _phoneController.text.trim(),
-      password: _passwordController.text,
-    );
-
-    if (!mounted) return;
-
-    setState(() => _isLoading = false);
-
-    if (success) {
-      context.push('/auth/otp?phone=${_phoneController.text.trim()}');
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Signup failed. Please try again.')),
-      );
+    if (_formKey.currentState?.validate() ?? false) {
+      setState(() => _isLoading = true);
+      try {
+        // TODO: Implement signup logic with AuthService
+        await Future.delayed(const Duration(seconds: 2)); // Placeholder
+        if (mounted) {
+          context.go('/home');
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Signup failed: $e')),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
     }
   }
 
@@ -79,12 +73,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 Text(
                   'Sign up to get started with NAVSWAP',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).textTheme.bodySmall?.color,
-                  ),
+                        color: Theme.of(context).textTheme.bodySmall?.color,
+                      ),
                 ),
-                
                 const SizedBox(height: 32),
-                
                 TextFormField(
                   controller: _nameController,
                   decoration: const InputDecoration(
@@ -99,9 +91,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     return null;
                   },
                 ),
-                
                 const SizedBox(height: 16),
-                
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -120,9 +110,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     return null;
                   },
                 ),
-                
                 const SizedBox(height: 16),
-                
                 TextFormField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
@@ -138,9 +126,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     return null;
                   },
                 ),
-                
                 const SizedBox(height: 16),
-                
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
@@ -150,7 +136,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
                       onPressed: () {
                         setState(() => _obscurePassword = !_obscurePassword);
@@ -167,9 +155,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     return null;
                   },
                 ),
-                
                 const SizedBox(height: 32),
-                
                 SizedBox(
                   height: 56,
                   child: ElevatedButton(
@@ -180,15 +166,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                             width: 24,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
                         : const Text('Sign Up'),
                   ),
                 ),
-                
                 const SizedBox(height: 24),
-                
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
