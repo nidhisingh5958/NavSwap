@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/exceptions/api_exceptions.dart';
 import '../../../../core/services/dio_service.dart';
+import '../../../../core/services/ai_inference_service.dart';
 import '../models/station_model.dart';
 
 abstract class CustomerRemoteDataSource {
@@ -25,7 +26,11 @@ abstract class CustomerRemoteDataSource {
 
   Future<StationScoreModel> getStationScore(String stationId);
   Future<StationHealthModel> getStationHealth(String stationId);
+  
+  /// Get AI predictions for a station (on-device inference)
+  Future<StationPredictions?> getAIPredictions(String stationId, Map<String, double> features);
 }
+
 
 class CustomerRemoteDataSourceImpl implements CustomerRemoteDataSource {
   final DioService dioService;
@@ -148,5 +153,21 @@ class CustomerRemoteDataSourceImpl implements CustomerRemoteDataSource {
       message: e.message ?? 'An error occurred',
       originalException: e,
     );
+  }
+
+  /// Get AI predictions using on-device ONNX models
+  @override
+  Future<StationPredictions?> getAIPredictions(
+    String stationId, 
+    Map<String, double> features,
+  ) async {
+    try {
+      final aiService = AIInferenceService();
+      await aiService.initialize();
+      return await aiService.getStationPredictions(features);
+    } catch (e) {
+      print('⚠️ On-device AI prediction failed: $e');
+      return null;
+    }
   }
 }

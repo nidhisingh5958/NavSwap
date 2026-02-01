@@ -89,9 +89,11 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/animations/
+    - assets/models/
     
   
   # fonts:
   #   - family: CustomIcons
   #     fonts:
   #       - asset: assets/fonts/custom_icons.ttf
+

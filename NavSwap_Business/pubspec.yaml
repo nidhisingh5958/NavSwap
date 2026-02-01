@@ -34,6 +34,9 @@ dependencies:
   # Utils
   intl: ^0.18.1
   uuid: ^4.2.2
+  
+  # On-device AI Inference
+  onnxruntime: ^1.17.0
 
 dev_dependencies:
   flutter_test:
@@ -58,3 +61,5 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/models/
+

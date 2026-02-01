@@ -5,7 +5,7 @@ import '../domain/models/swap_response_model.dart';
 
 class ScannerApiService {
   static const String baseUrl =
-      'http://ec2-52-89-235-59.us-west-2.compute.amazonaws.com:3000';
+      'http://ec2-52-89-235-59.us-west-2.compute.amazonaws.com:3002';
 
   Future<VerifyResponseModel?> verifyQRCode(String qrData) async {
     try {
