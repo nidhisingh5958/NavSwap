@@ -307,10 +307,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ),
                   _buildActionCard(
                     context,
-                    'Scanner',
-                    Icons.qr_code_scanner,
+                    'Ticket',
+                    Icons.airplane_ticket_outlined,
                     AppTheme.gradientStart,
-                    () => context.push('/staff/scanner'),
+                    () => context.push('/staff/ticket'),
                   ),
                 ],
               ),

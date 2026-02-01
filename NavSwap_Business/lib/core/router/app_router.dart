@@ -12,6 +12,7 @@ import '../../features/history/presentation/screens/history_screen.dart';
 import '../../features/scanner/presentation/screens/qr_scanner_screen.dart';
 import '../../features/scanner/presentation/screens/swap_details_screen.dart';
 import '../../features/scanner/domain/models/verify_response_model.dart';
+import '../../features/ticket/presentation/screens/ticket_raising_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -43,6 +44,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/staff/faults',
         builder: (context, state) => const FaultsScreen(),
+      ),
+      GoRoute(
+        path: '/staff/ticket',
+        builder: (context, state) => const TicketRaisingScreen(),
       ),
       GoRoute(
         path: '/staff/actions',

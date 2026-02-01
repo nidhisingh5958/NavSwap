@@ -5,7 +5,8 @@ import '../domain/models/station_health_model.dart';
 import '../domain/models/station_predictions_model.dart';
 
 class StationApiService {
-  static const String baseUrl = 'http://localhost:3000';
+  static const String baseUrl =
+      'http://ec2-52-89-235-59.us-west-2.compute.amazonaws.com:3000';
 
   Future<StationScoreModel?> getStationScore(String stationId) async {
     try {

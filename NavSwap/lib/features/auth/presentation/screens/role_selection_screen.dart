@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/services/auth_service.dart';
 
 class RoleSelectionScreen extends ConsumerStatefulWidget {
   const RoleSelectionScreen({super.key});
@@ -12,25 +11,12 @@ class RoleSelectionScreen extends ConsumerStatefulWidget {
 
 class _RoleSelectionScreenState extends ConsumerState<RoleSelectionScreen> {
   String? _selectedRole;
-  bool _isLoading = false;
 
   Future<void> _handleContinue() async {
     if (_selectedRole == null) return;
 
-    setState(() => _isLoading = true);
-
-    final success = await ref.read(authServiceProvider).selectRole(_selectedRole!);
-
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    if (success) {
-      if (_selectedRole == 'customer') {
-        context.go('/customer/home');
-      } else {
-        context.go('/transporter/verification');
-      }
-    }
+    // Navigate to Login with selected role
+    context.go(Uri(path: '/auth/login', queryParameters: {'role': _selectedRole}).toString());
   }
 
   @override
@@ -82,10 +68,8 @@ class _RoleSelectionScreenState extends ConsumerState<RoleSelectionScreen> {
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: _selectedRole == null || _isLoading ? null : _handleContinue,
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Continue'),
+                  onPressed: _selectedRole == null ? null : _handleContinue,
+                  child: const Text('Continue'),
                 ),
               ),
             ],

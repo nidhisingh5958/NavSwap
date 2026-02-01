@@ -19,12 +19,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   Future<void> _initialize() async {
     await Future.delayed(const Duration(seconds: 2));
-    
+
     if (!mounted) return;
-    
+
     final authService = ref.read(authServiceProvider);
     await authService.initialize();
-    
+
     if (authService.isAuthenticated) {
       final role = authService.currentUser?.role;
       if (role == 'customer') {
@@ -32,10 +32,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       } else if (role == 'transporter') {
         context.go('/transporter/dashboard');
       } else {
-        context.go('/auth/login');
+        context.go('/auth/role-select');
       }
     } else {
-      context.go('/auth/login');
+      context.go('/auth/role-select');
     }
   }
 
@@ -64,16 +64,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             Text(
               'NAVSWAP',
               style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
               'AI-Powered EV Battery Swap',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.white70,
-              ),
+                    color: Colors.white70,
+                  ),
             ),
             const SizedBox(height: 48),
             const CircularProgressIndicator(

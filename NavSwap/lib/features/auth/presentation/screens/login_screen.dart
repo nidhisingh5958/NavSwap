@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/services/auth_service.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+  final String? role;
+
+  const LoginScreen({super.key, this.role});
 
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
@@ -32,6 +34,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final success = await ref.read(authServiceProvider).login(
           emailOrPhone: _emailController.text.trim(),
           password: _passwordController.text,
+          role: widget.role,
         );
 
     if (!mounted) return;

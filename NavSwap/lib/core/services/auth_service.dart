@@ -52,6 +52,7 @@ class AuthService {
   Future<bool> login({
     required String emailOrPhone,
     required String password,
+    String? role,
   }) async {
     // Mock Login Bypass
     if (emailOrPhone == '9999999999' && password == '123456') {
@@ -63,7 +64,7 @@ class AuthService {
         name: 'Demo User',
         email: 'demo@navswap.com',
         phone: '9999999999',
-        role: 'user',
+        role: role ?? 'customer', // Use selected role or default to customer
         isVerified: true,
         isApproved: true,
         createdAt: DateTime.now(),

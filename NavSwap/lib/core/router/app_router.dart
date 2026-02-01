@@ -30,7 +30,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == '/splash';
 
       if (!isAuthenticated && !isAuthRoute) {
-        return '/auth/login';
+        return '/auth/role-select';
       }
 
       if (isAuthenticated &&
@@ -57,7 +57,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/auth/login',
         name: 'login',
-        builder: (context, state) => const LoginScreen(),
+        builder: (context, state) {
+          final role = state.uri.queryParameters['role'];
+          return LoginScreen(role: role);
+        },
       ),
       GoRoute(
         path: '/auth/signup',
