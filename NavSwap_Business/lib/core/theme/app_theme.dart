@@ -6,17 +6,17 @@ class AppTheme {
   static const Color darkBackground = Color(0xFF000000); // Pure Black
   static const Color cardBackground = Color(0xFF121212); // Dark Grey
   static const Color surfaceColor = Color(0xFF1E1E1E); // Lighter Grey
-  
+
   // Gradient Colors
   static const Color gradientStart = Color(0xFFFFFFFF); // White
   static const Color gradientEnd = Color(0xFFB0B0B0); // Silver
-  
+
   // Status Colors
   static const Color successGreen = Color(0xFF4CAF50); // Keep for semantics
   static const Color warningYellow = Color(0xFFFFB74D); // Keep for semantics
   static const Color criticalRed = Color(0xFFEF5350); // Keep for semantics
   static const Color infoBlue = Color(0xFF42A5F5); // Keep for semantics
-  
+
   // Text Colors
   static const Color textPrimary = Color(0xFFFFFFFF);
   static const Color textSecondary = Color(0xFFB0B0B0); // Pure Grey
@@ -27,7 +27,6 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.dark,
       scaffoldBackgroundColor: darkBackground,
-      
       colorScheme: const ColorScheme.dark(
         primary: gradientStart, // White primary
         secondary: gradientEnd, // Silver secondary
@@ -35,7 +34,6 @@ class AppTheme {
         background: darkBackground,
         error: criticalRed,
       ),
-      
       textTheme: GoogleFonts.interTextTheme(
         const TextTheme(
           displayLarge: TextStyle(
@@ -90,16 +88,15 @@ class AppTheme {
           ),
         ),
       ),
-      
       cardTheme: CardThemeData(
         color: cardBackground,
         elevation: 4,
-        shadowColor: Colors.white.withValues(alpha: 0.1), // Subtle white shadow for visibility
+        shadowColor: Colors.white
+            .withValues(alpha: 0.1), // Subtle white shadow for visibility
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
       ),
-      
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: gradientStart, // White button
@@ -115,7 +112,6 @@ class AppTheme {
           ),
         ),
       ),
-      
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: surfaceColor,
@@ -129,12 +125,13 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: gradientStart, width: 2), // White border
+          borderSide:
+              const BorderSide(color: gradientStart, width: 2), // White border
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         hintStyle: const TextStyle(color: textHint),
       ),
-      
       appBarTheme: const AppBarTheme(
         backgroundColor: darkBackground,
         elevation: 0,
@@ -147,24 +144,24 @@ class AppTheme {
       ),
     );
   }
-  
+
   // Gradient Decorations
   static BoxDecoration gradientCard = BoxDecoration(
     gradient: const LinearGradient(
-      colors: [gradientStart, gradientEnd],
+      colors: [Color.fromARGB(45, 255, 255, 255), gradientEnd],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
     borderRadius: BorderRadius.circular(20),
     boxShadow: [
       BoxShadow(
-        color: gradientStart.withValues(alpha: 0.3),
+        color: const Color.fromARGB(181, 255, 255, 255).withValues(alpha: 0.3),
         blurRadius: 16,
         offset: const Offset(0, 8),
       ),
     ],
   );
-  
+
   static BoxDecoration darkCard = BoxDecoration(
     color: cardBackground,
     borderRadius: BorderRadius.circular(20),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../providers/station_providers.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -12,9 +13,14 @@ class DashboardScreen extends ConsumerStatefulWidget {
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   int _selectedIndex = 0;
+  final String stationId = 'ST_101'; // Replace with actual station ID
 
   @override
   Widget build(BuildContext context) {
+    final scoreAsync = ref.watch(stationScoreProvider(stationId));
+    final healthAsync = ref.watch(stationHealthProvider(stationId));
+    final predictionsAsync = ref.watch(stationPredictionsProvider(stationId));
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -42,160 +48,234 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ),
                   GestureDetector(
                     onTap: () => context.push('/staff/profile'),
-                    child: CircleAvatar(
+                    child: const CircleAvatar(
                       radius: 24,
-                      backgroundColor: AppTheme.gradientStart,
-                      child: const Icon(Icons.person, color: Colors.white),
+                      backgroundColor: AppTheme.gradientEnd,
+                      child: Icon(Icons.person, color: Colors.white),
                     ),
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Station Summary Card
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: AppTheme.gradientCard,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+              healthAsync.when(
+                data: (health) => Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: AppTheme.gradientCard,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Delhi Sector 18',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium
+                                    ?.copyWith(
+                                      color: Colors.white,
+                                    ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Station ID: ${health?.stationId ?? 'NS-DL-018'}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: Colors.white.withOpacity(0.8),
+                                    ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: _getStatusColor(
+                                        health?.status ?? 'operational'),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  (health?.status ?? 'ACTIVE').toUpperCase(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Stats Row - Using predictions for queue data
+                      predictionsAsync.when(
+                        data: (predictions) => Row(
                           children: [
-                            Text(
-                              'Delhi Sector 18',
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                color: Colors.white,
+                            Expanded(
+                              child: _buildStatItem(
+                                context,
+                                _calculateActiveSwaps(
+                                    predictions?.loadForecast.predictedLoad ??
+                                        0.0),
+                                'Active Swaps',
+                                Icons.swap_horizontal_circle,
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Station ID: NS-DL-018',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.white.withOpacity(0.8),
+                            Container(
+                              width: 1,
+                              height: 40,
+                              color: Colors.white.withOpacity(0.2),
+                            ),
+                            Expanded(
+                              child: _buildStatItem(
+                                context,
+                                _calculateQueue(
+                                    predictions?.loadForecast.predictedLoad ??
+                                        0.0),
+                                'In Queue',
+                                Icons.people_outline,
+                              ),
+                            ),
+                            Container(
+                              width: 1,
+                              height: 40,
+                              color: Colors.white.withOpacity(0.2),
+                            ),
+                            Expanded(
+                              child: _buildStatItem(
+                                context,
+                                _calculateAvailable(
+                                    predictions?.loadForecast.predictedLoad ??
+                                        0.0),
+                                'Available',
+                                Icons.battery_charging_full,
                               ),
                             ),
                           ],
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: const BoxDecoration(
-                                  color: AppTheme.successGreen,
-                                  shape: BoxShape.circle,
-                                ),
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
+                        error: (_, __) => Row(
+                          children: [
+                            Expanded(
+                              child: _buildStatItem(
+                                context,
+                                '12',
+                                'Active Swaps',
+                                Icons.swap_horizontal_circle,
                               ),
-                              const SizedBox(width: 6),
-                              const Text(
-                                'ACTIVE',
-                                style: TextStyle(
+                            ),
+                            Container(
+                              width: 1,
+                              height: 40,
+                              color: Colors.white.withOpacity(0.2),
+                            ),
+                            Expanded(
+                              child: _buildStatItem(
+                                context,
+                                '8',
+                                'In Queue',
+                                Icons.people_outline,
+                              ),
+                            ),
+                            Container(
+                              width: 1,
+                              height: 40,
+                              color: Colors.white.withOpacity(0.2),
+                            ),
+                            Expanded(
+                              child: _buildStatItem(
+                                context,
+                                '45',
+                                'Available',
+                                Icons.battery_charging_full,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Charger Health
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.offline_bolt,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Charger Health:',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Colors.white.withOpacity(0.8),
+                                ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${health?.healthScore ?? 98}%',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
                                   color: Colors.white,
-                                  fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                 ),
-                              ),
-                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Stats Row
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildStatItem(
-                            context,
-                            '12',
-                            'Active Swaps',
-                            Icons.swap_horizontal_circle,
-                          ),
-                        ),
-                        Container(
-                          width: 1,
-                          height: 40,
-                          color: Colors.white.withOpacity(0.2),
-                        ),
-                        Expanded(
-                          child: _buildStatItem(
-                            context,
-                            '8',
-                            'In Queue',
-                            Icons.people_outline,
-                          ),
-                        ),
-                        Container(
-                          width: 1,
-                          height: 40,
-                          color: Colors.white.withOpacity(0.2),
-                        ),
-                        Expanded(
-                          child: _buildStatItem(
-                            context,
-                            '45',
-                            'Available',
-                            Icons.battery_charging_full,
-                          ),
-                        ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Charger Health
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.offline_bolt,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Charger Health:',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.white.withOpacity(0.8),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '98%',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (_, __) => Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: AppTheme.gradientCard,
+                  child: const Text(
+                    'Error loading station data',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Quick Actions Grid
               Text(
                 'Quick Actions',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               GridView.count(
                 crossAxisCount: 2,
                 shrinkWrap: true,
@@ -234,83 +314,124 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // AI Recommendations
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: AppTheme.darkCard,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppTheme.infoBlue.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
+              predictionsAsync.when(
+                data: (predictions) => Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: AppTheme.darkCard,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.infoBlue.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.auto_awesome,
+                              color: AppTheme.infoBlue,
+                              size: 20,
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.auto_awesome,
-                            color: AppTheme.infoBlue,
-                            size: 20,
+                          const SizedBox(width: 12),
+                          Text(
+                            'AI Recommendations',
+                            style: Theme.of(context).textTheme.titleLarge,
                           ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      if (predictions?.faultPrediction.riskLevel == 'high')
+                        _buildRecommendationItem(
+                          context,
+                          'Schedule preventive maintenance - High fault risk detected',
+                          'High Priority',
+                          AppTheme.warningYellow,
+                        )
+                      else if (predictions?.faultPrediction.riskLevel ==
+                          'medium')
+                        _buildRecommendationItem(
+                          context,
+                          'Monitor charger bay closely - Medium fault risk',
+                          'Medium Priority',
+                          AppTheme.infoBlue,
+                        )
+                      else
+                        _buildRecommendationItem(
+                          context,
+                          'System operating normally - Low fault risk',
+                          'Low Priority',
+                          AppTheme.successGreen,
                         ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'AI Recommendations',
-                          style: Theme.of(context).textTheme.titleLarge,
+                      const Divider(height: 24, color: AppTheme.surfaceColor),
+                      if (predictions != null &&
+                          predictions.loadForecast.predictedLoad > 0.7)
+                        _buildRecommendationItem(
+                          context,
+                          'Peak hours approaching (${predictions.loadForecast.peakTimeStart} - ${predictions.loadForecast.peakTimeEnd}) - Consider adding staff',
+                          'Medium Priority',
+                          AppTheme.infoBlue,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _buildRecommendationItem(
-                      context,
-                      'Schedule preventive maintenance for Charger Bay 3',
-                      'High Priority',
-                      AppTheme.warningYellow,
-                    ),
-                    const Divider(height: 24, color: AppTheme.surfaceColor),
-                    _buildRecommendationItem(
-                      context,
-                      'Peak hours approaching - Consider adding staff',
-                      'Medium Priority',
-                      AppTheme.infoBlue,
-                    ),
-                    const SizedBox(height: 12),
-                    TextButton(
-                      onPressed: () => context.push('/staff/actions'),
-                      child: const Text('View All Recommendations'),
-                    ),
-                  ],
+                      const SizedBox(height: 12),
+                      TextButton(
+                        onPressed: () => context.push('/staff/actions'),
+                        child: const Text('View All Recommendations'),
+                      ),
+                    ],
+                  ),
+                ),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (_, __) => Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: AppTheme.darkCard,
+                  child: const Text('Error loading predictions'),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Today's Performance
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: AppTheme.darkCard,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Today\'s Performance',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildPerformanceMetric(context, '47', 'Swaps Completed'),
-                        _buildPerformanceMetric(context, '3', 'Faults Resolved'),
-                        _buildPerformanceMetric(context, '12 min', 'Avg Swap Time'),
-                      ],
-                    ),
-                  ],
+              scoreAsync.when(
+                data: (score) => Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: AppTheme.darkCard,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Today\'s Performance',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildPerformanceMetric(
+                              context,
+                              '${_calculateSwaps(score?.componentScores.availabilityScore ?? 0.9)}',
+                              'Swaps Completed'),
+                          _buildPerformanceMetric(
+                              context, '3', 'Faults Resolved'),
+                          _buildPerformanceMetric(
+                              context,
+                              '${_calculateAvgTime(score?.componentScores.waitTimeScore ?? 0.85)} min',
+                              'Avg Swap Time'),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (_, __) => Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: AppTheme.darkCard,
+                  child: const Text('Error loading performance data'),
                 ),
               ),
             ],
@@ -346,7 +467,42 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildStatItem(BuildContext context, String value, String label, IconData icon) {
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'operational':
+        return AppTheme.successGreen;
+      case 'degraded':
+        return AppTheme.warningYellow;
+      case 'offline':
+      case 'maintenance':
+        return Colors.red;
+      default:
+        return AppTheme.successGreen;
+    }
+  }
+
+  String _calculateActiveSwaps(double predictedLoad) {
+    return (predictedLoad * 50).round().toString();
+  }
+
+  String _calculateQueue(double predictedLoad) {
+    return (predictedLoad * 15).round().toString();
+  }
+
+  String _calculateAvailable(double predictedLoad) {
+    return (100 - (predictedLoad * 100)).round().toString();
+  }
+
+  int _calculateSwaps(double availabilityScore) {
+    return (availabilityScore * 52).round();
+  }
+
+  int _calculateAvgTime(double waitTimeScore) {
+    return (20 - (waitTimeScore * 8)).round();
+  }
+
+  Widget _buildStatItem(
+      BuildContext context, String value, String label, IconData icon) {
     return Column(
       children: [
         Icon(icon, color: Colors.white, size: 24),
@@ -354,23 +510,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         Text(
           value,
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 4),
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.white.withOpacity(0.8),
-          ),
+                color: Colors.white.withOpacity(0.8),
+              ),
           textAlign: TextAlign.center,
         ),
       ],
     );
   }
 
-  Widget _buildActionCard(BuildContext context, String title, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildActionCard(BuildContext context, String title, IconData icon,
+      Color color, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -399,7 +556,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildRecommendationItem(BuildContext context, String text, String priority, Color color) {
+  Widget _buildRecommendationItem(
+      BuildContext context, String text, String priority, Color color) {
     return Row(
       children: [
         Container(
@@ -422,7 +580,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               const SizedBox(height: 4),
               Text(
                 priority,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: color),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: color),
               ),
             ],
           ),
@@ -431,15 +592,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildPerformanceMetric(BuildContext context, String value, String label) {
+  Widget _buildPerformanceMetric(
+      BuildContext context, String value, String label) {
     return Column(
       children: [
         Text(
           value,
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            color: AppTheme.gradientStart,
-            fontWeight: FontWeight.bold,
-          ),
+                color: AppTheme.gradientStart,
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 4),
         Text(
@@ -451,7 +613,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, IconData icon, String label, int index) {
+  Widget _buildNavItem(
+      BuildContext context, IconData icon, String label, int index) {
     final isSelected = _selectedIndex == index;
     return GestureDetector(
       onTap: () {
@@ -484,7 +647,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: isSelected ? AppTheme.gradientStart : AppTheme.textSecondary,
+              color:
+                  isSelected ? AppTheme.gradientStart : AppTheme.textSecondary,
             ),
           ),
         ],

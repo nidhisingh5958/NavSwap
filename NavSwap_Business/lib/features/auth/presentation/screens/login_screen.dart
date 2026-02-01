@@ -24,7 +24,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void _handleLogin() {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-      
+
       // Simulate API call
       Future.delayed(const Duration(seconds: 2), () {
         setState(() => _isLoading = false);
@@ -45,7 +45,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 40),
-                
+
                 // Logo/Header Section
                 Container(
                   padding: const EdgeInsets.all(20),
@@ -59,10 +59,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Icon(
-                          Icons.electric_bolt_rounded,
+                        child: Image.asset(
+                          'assets/icons/LogoBackgroundRemoved.png',
                           color: Colors.white,
-                          size: 32,
+                          fit: BoxFit.contain,
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -72,16 +72,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           children: [
                             Text(
                               'NAVSWAP',
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineMedium
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                             ),
                             Text(
                               'Station Staff Operations',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.white.withOpacity(0.9),
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: Colors.white.withOpacity(0.9),
+                                  ),
                             ),
                           ],
                         ),
@@ -89,23 +95,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 48),
-                
+
                 Text(
                   'Staff Login',
                   style: Theme.of(context).textTheme.displaySmall,
                 ),
-                
+
                 const SizedBox(height: 8),
-                
+
                 Text(
                   'Enter your registered mobile number to continue',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Phone Number Input
                 TextFormField(
                   controller: _phoneController,
@@ -114,7 +120,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Mobile Number',
                     hintText: 'Enter 10-digit mobile number',
-                    prefixIcon: Icon(Icons.phone_outlined, color: AppTheme.textSecondary),
+                    prefixIcon: Icon(Icons.phone_outlined,
+                        color: AppTheme.textSecondary),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -126,9 +133,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     return null;
                   },
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Login Button
                 SizedBox(
                   width: double.infinity,
@@ -147,9 +154,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         : const Text('Get OTP'),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Info Cards
                 Container(
                   padding: const EdgeInsets.all(20),
@@ -188,9 +195,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 48),
-                
+
                 Center(
                   child: Column(
                     children: [

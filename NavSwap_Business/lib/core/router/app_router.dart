@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -8,9 +7,11 @@ import '../../features/queue/presentation/screens/queue_screen.dart';
 import '../../features/inventory/presentation/screens/inventory_screen.dart';
 import '../../features/faults/presentation/screens/faults_screen.dart';
 import '../../features/actions/presentation/screens/actions_screen.dart';
-import '../../features/scanner/presentation/screens/scanner_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/history/presentation/screens/history_screen.dart';
+import '../../features/scanner/presentation/screens/qr_scanner_screen.dart';
+import '../../features/scanner/presentation/screens/swap_details_screen.dart';
+import '../../features/scanner/domain/models/verify_response_model.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -49,7 +50,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/staff/scanner',
-        builder: (context, state) => const ScannerScreen(),
+        builder: (context, state) => const QRScannerScreen(),
+      ),
+      GoRoute(
+        path: '/staff/swap-details',
+        builder: (context, state) {
+          final verifyData = state.extra as VerifyResponseModel;
+          return SwapDetailsScreen(verifyData: verifyData);
+        },
       ),
       GoRoute(
         path: '/staff/profile',
@@ -62,3 +70,21 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
+
+final appRouter = GoRouter(
+  routes: [
+    // ...existing routes...
+
+    GoRoute(
+      path: '/staff/scanner',
+      builder: (context, state) => const QRScannerScreen(),
+    ),
+    GoRoute(
+      path: '/staff/swap-details',
+      builder: (context, state) {
+        final verifyData = state.extra as VerifyResponseModel;
+        return SwapDetailsScreen(verifyData: verifyData);
+      },
+    ),
+  ],
+);

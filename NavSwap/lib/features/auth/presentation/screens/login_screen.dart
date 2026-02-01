@@ -30,9 +30,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isLoading = true);
 
     final success = await ref.read(authServiceProvider).login(
-      emailOrPhone: _emailController.text.trim(),
-      password: _passwordController.text,
-    );
+          emailOrPhone: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
 
     if (!mounted) return;
 
@@ -60,7 +60,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 40),
-                
+
                 // Logo
                 Container(
                   width: 80,
@@ -69,15 +69,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     color: Theme.of(context).primaryColor,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Icon(
-                    Icons.ev_station,
-                    size: 40,
+                  child: Image.asset(
+                    'assets/icons/LogoBackgroundRemoved.png',
                     color: Colors.white,
+                    fit: BoxFit.contain,
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Title
                 Text(
                   'Welcome Back',
@@ -87,12 +87,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Text(
                   'Sign in to continue to NAVSWAP',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).textTheme.bodySmall?.color,
-                  ),
+                        color: Theme.of(context).textTheme.bodySmall?.color,
+                      ),
                 ),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // Email/Phone Field
                 TextFormField(
                   controller: _emailController,
@@ -109,9 +109,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     return null;
                   },
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Password Field
                 TextFormField(
                   controller: _passwordController,
@@ -122,7 +122,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
                       onPressed: () {
                         setState(() => _obscurePassword = !_obscurePassword);
@@ -136,9 +138,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     return null;
                   },
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 // Forgot Password
                 Align(
                   alignment: Alignment.centerRight,
@@ -147,9 +149,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: const Text('Forgot Password?'),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Login Button
                 SizedBox(
                   height: 56,
@@ -161,15 +163,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             width: 24,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
                         : const Text('Sign In'),
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Divider
                 Row(
                   children: [
@@ -184,9 +187,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const Expanded(child: Divider()),
                   ],
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // OTP Login Button
                 SizedBox(
                   height: 56,
@@ -196,9 +199,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     label: const Text('Login with OTP'),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Sign Up Link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
