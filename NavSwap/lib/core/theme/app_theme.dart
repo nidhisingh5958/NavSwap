@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Colors
-  static const Color primaryColor = Color(0xFF1A1A1A);
-  static const Color accentOrange = Color(0xFFFF6B4A);
-  static const Color accentBlue = Color(0xFF4A90E2);
-  static const Color backgroundColor = Color(0xFFF8F9FA);
-  static const Color cardColor = Colors.white;
-  static const Color textPrimary = Color(0xFF1A1A1A);
-  static const Color textSecondary = Color(0xFF6B6B6B);
-  static const Color borderColor = Color(0xFFE8E8E8);
-  static const Color successGreen = Color(0xFF4CAF50);
-  static const Color warningYellow = Color(0xFFFFC107);
-  static const Color errorRed = Color(0xFFFF5252);
+  // Colors - Black & White Theme
+  static const Color primaryColor = Color(0xFF000000);
+  static const Color accentColor = Color(0xFF333333);
+  static const Color secondaryAccent = Color(0xFF666666);
+  static const Color backgroundColor = Color(0xFFFFFFFF);
+  static const Color cardColor = Color(0xFFF5F5F5);
+  static const Color textPrimary = Color(0xFF000000);
+  static const Color textSecondary = Color(0xFF666666);
+  static const Color borderColor = Color(0xFFE0E0E0);
+  static const Color successGreen = Color(0xFF333333);
+  static const Color warningYellow = Color(0xFF666666);
+  static const Color errorRed = Color(0xFF1A1A1A);
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -24,7 +24,7 @@ class AppTheme {
       cardColor: cardColor,
       colorScheme: const ColorScheme.light(
         primary: primaryColor,
-        secondary: accentOrange,
+        secondary: accentColor,
         surface: cardColor,
         background: backgroundColor,
         error: errorRed,

@@ -32,19 +32,22 @@ class InventoryScreen extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildInventoryStat(context, '45', 'Charged', Icons.battery_charging_full),
+                        _buildInventoryStat(context, '45', 'Charged',
+                            Icons.battery_charging_full),
                         Container(
                           width: 1,
                           height: 50,
                           color: Colors.white.withOpacity(0.3),
                         ),
-                        _buildInventoryStat(context, '8', 'Charging', Icons.battery_std),
+                        _buildInventoryStat(
+                            context, '8', 'Charging', Icons.battery_std),
                         Container(
                           width: 1,
                           height: 50,
                           color: Colors.white.withOpacity(0.3),
                         ),
-                        _buildInventoryStat(context, '3', 'Faulty', Icons.battery_alert),
+                        _buildInventoryStat(
+                            context, '3', 'Faulty', Icons.battery_alert),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -55,25 +58,27 @@ class InventoryScreen extends ConsumerWidget {
                       children: [
                         Text(
                           'Total Capacity:',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.white.withOpacity(0.8),
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Colors.white.withOpacity(0.8),
+                                  ),
                         ),
                         Text(
                           '60 batteries',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                         ),
                       ],
                     ),
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Low Stock Alert
               Container(
                 padding: const EdgeInsets.all(16),
@@ -84,7 +89,8 @@ class InventoryScreen extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.warning_amber_rounded, color: AppTheme.warningYellow),
+                    const Icon(Icons.warning_amber_rounded,
+                        color: AppTheme.warningYellow),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -95,16 +101,16 @@ class InventoryScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               Text(
                 'Charged Batteries',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -126,16 +132,16 @@ class InventoryScreen extends ConsumerWidget {
                   );
                 },
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               Text(
                 'Charging',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
-              
-              const SizedBox(height: 16),
-              
+
+              const SizedBox(height: 20),
+
               ...List.generate(3, (index) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
@@ -147,16 +153,16 @@ class InventoryScreen extends ConsumerWidget {
                   ),
                 );
               }),
-              
+
               const SizedBox(height: 24),
-              
+
               Text(
                 'Faulty Batteries',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               ...List.generate(2, (index) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
@@ -174,7 +180,8 @@ class InventoryScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInventoryStat(BuildContext context, String value, String label, IconData icon) {
+  Widget _buildInventoryStat(
+      BuildContext context, String value, String label, IconData icon) {
     return Column(
       children: [
         Icon(icon, color: Colors.white, size: 32),
@@ -182,55 +189,55 @@ class InventoryScreen extends ConsumerWidget {
         Text(
           value,
           style: Theme.of(context).textTheme.displaySmall?.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 4),
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.white.withOpacity(0.8),
-          ),
+                color: Colors.white.withOpacity(0.8),
+              ),
         ),
       ],
     );
   }
 
-  Widget _buildBatteryCard(BuildContext context, String id, int charge, Color color, String status, String location) {
+  Widget _buildBatteryCard(BuildContext context, String id, int charge,
+      Color color, String status, String location) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: AppTheme.darkCard,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.battery_charging_full, color: color, size: 48),
-          const SizedBox(height: 12),
+          Icon(Icons.battery_charging_full, color: color, size: 36),
+          const SizedBox(height: 6),
           Text(
             id,
-            style: Theme.of(context).textTheme.titleMedium,
+            style: Theme.of(context).textTheme.titleSmall,
           ),
-          const SizedBox(height: 4),
           Text(
             '$charge%',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: color,
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               status,
-              style: TextStyle(fontSize: 12, color: color),
+              style: TextStyle(fontSize: 11, color: color),
             ),
           ),
-          const SizedBox(height: 4),
           Text(
             location,
             style: Theme.of(context).textTheme.bodySmall,
@@ -240,7 +247,8 @@ class InventoryScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildChargingCard(BuildContext context, String id, int progress, String timeLeft) {
+  Widget _buildChargingCard(
+      BuildContext context, String id, int progress, String timeLeft) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: AppTheme.darkCard,
@@ -252,7 +260,8 @@ class InventoryScreen extends ConsumerWidget {
               color: AppTheme.infoBlue.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.battery_std, color: AppTheme.infoBlue, size: 32),
+            child: const Icon(Icons.battery_std,
+                color: AppTheme.infoBlue, size: 32),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -270,7 +279,8 @@ class InventoryScreen extends ConsumerWidget {
                     value: progress / 100,
                     minHeight: 8,
                     backgroundColor: AppTheme.surfaceColor,
-                    valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.infoBlue),
+                    valueColor:
+                        const AlwaysStoppedAnimation<Color>(AppTheme.infoBlue),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -280,8 +290,8 @@ class InventoryScreen extends ConsumerWidget {
                     Text(
                       '$progress%',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.infoBlue,
-                      ),
+                            color: AppTheme.infoBlue,
+                          ),
                     ),
                     Text(
                       timeLeft,
@@ -309,7 +319,8 @@ class InventoryScreen extends ConsumerWidget {
               color: AppTheme.criticalRed.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.battery_alert, color: AppTheme.criticalRed, size: 32),
+            child: const Icon(Icons.battery_alert,
+                color: AppTheme.criticalRed, size: 32),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -324,8 +335,8 @@ class InventoryScreen extends ConsumerWidget {
                 Text(
                   issue,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.criticalRed,
-                  ),
+                        color: AppTheme.criticalRed,
+                      ),
                 ),
               ],
             ),

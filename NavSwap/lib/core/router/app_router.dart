@@ -9,6 +9,7 @@ import 'package:navswap_app/features/customer/presentation/screens/notifications
 import 'package:navswap_app/features/customer/presentation/screens/queue_status_screen.dart';
 import 'package:navswap_app/features/customer/presentation/screens/station_detail_screen.dart';
 import 'package:navswap_app/features/customer/presentation/screens/station_list_screen.dart';
+import 'package:navswap_app/features/customer/presentation/screens/station_map_screen.dart';
 import 'package:navswap_app/features/transporter/presentation/screens/performance_screen.dart';
 import 'package:navswap_app/features/transporter/presentation/screens/task_detail_screen.dart';
 import 'package:navswap_app/features/transporter/presentation/screens/task_list_screen.dart';
@@ -90,7 +91,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/customer/stations',
         name: 'customer-stations',
-        builder: (context, state) => const StationListScreen(),
+        builder: (context, state) => const StationMapScreen(),
       ),
       GoRoute(
         path: '/customer/station/:id',
