@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:navswap_app/features/auth/presentation/screens/splash_screen.dart';
+import 'package:navswap_app/features/auth/screens/splash_screen.dart';
+import 'package:navswap_app/features/auth/screens/login_screen.dart';
+import 'package:navswap_app/features/auth/screens/otp_screen.dart';
+import 'package:navswap_app/features/auth/screens/signup_screen.dart';
 import 'package:navswap_app/features/customer/presentation/screens/ai_chatbot_screen.dart';
 import 'package:navswap_app/features/customer/presentation/screens/customer_profile_screen.dart';
 import 'package:navswap_app/features/customer/presentation/screens/favorites_screen.dart';
@@ -18,13 +21,9 @@ import 'package:navswap_app/features/transporter/presentation/screens/transporte
 import 'package:navswap_app/features/transporter/presentation/screens/transporter_profile_screen.dart';
 import 'package:navswap_app/features/transporter/presentation/screens/transporter_verification_screen.dart';
 
-import '../../features/role/presentation/screens/role_selection_screen.dart';
-import '../../features/auth/presentation/screens/login_screen.dart';
-import '../../features/auth/presentation/screens/signup_screen.dart';
-import '../../features/auth/presentation/screens/otp_screen.dart';
-
 // Customer Screens
-import '../../features/customer/home/presentation/screens/customer_home_screen.dart';
+import '../../features/customer/home/screens/customer_home_screen.dart';
+import '../../features/role/role_selection_screen.dart';
 
 // Transporter Screens
 
