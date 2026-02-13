@@ -23,24 +23,24 @@ class StatusBadge extends StatelessWidget {
 
     switch (type) {
       case StatusBadgeType.success:
-        backgroundColor = const Color(0xFFD1FAE5);
-        textColor = const Color(0xFF10B981);
+        backgroundColor = const Color(0xFF1A1A1A);
+        textColor = const Color(0xFFFFFFFF);
         break;
       case StatusBadgeType.warning:
-        backgroundColor = const Color(0xFFFEF3C7);
-        textColor = const Color(0xFFF59E0B);
+        backgroundColor = const Color(0xFF3A3A3A);
+        textColor = const Color(0xFFFFFFFF);
         break;
       case StatusBadgeType.error:
-        backgroundColor = const Color(0xFFFEE2E2);
-        textColor = const Color(0xFFEF4444);
+        backgroundColor = const Color(0xFF000000);
+        textColor = const Color(0xFFFFFFFF);
         break;
       case StatusBadgeType.info:
-        backgroundColor = const Color(0xFFDBEAFE);
-        textColor = const Color(0xFF3B82F6);
+        backgroundColor = const Color(0xFF2A2A2A);
+        textColor = const Color(0xFFFFFFFF);
         break;
       case StatusBadgeType.neutral:
-        backgroundColor = const Color(0xFFF1F5F9);
-        textColor = const Color(0xFF64748B);
+        backgroundColor = const Color(0xFFE8E8E8);
+        textColor = const Color(0xFF3A3A3A);
         break;
     }
 
@@ -51,7 +51,7 @@ class StatusBadge extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -111,13 +111,13 @@ class BatteryIndicator extends StatelessWidget {
     IconData icon;
 
     if (isLow) {
-      color = const Color(0xFFEF4444);
+      color = const Color(0xFF000000);
       icon = Icons.battery_alert_rounded;
     } else if (isMedium) {
-      color = const Color(0xFFF59E0B);
+      color = const Color(0xFF5A5A5A);
       icon = Icons.battery_3_bar_rounded;
     } else {
-      color = const Color(0xFF10B981);
+      color = const Color(0xFF333333);
       icon = Icons.battery_full_rounded;
     }
 
@@ -189,7 +189,7 @@ class _AvailabilityIndicatorState extends State<AvailabilityIndicator>
   @override
   Widget build(BuildContext context) {
     final color =
-        widget.isAvailable ? const Color(0xFF10B981) : const Color(0xFF94A3B8);
+        widget.isAvailable ? const Color(0xFF000000) : const Color(0xFFB0B0B0);
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -254,8 +254,8 @@ class DistanceBadge extends StatelessWidget {
         vertical: 6,
       ),
       decoration: BoxDecoration(
-        color: (color ?? const Color(0xFF0066FF)).withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
+        color: (color ?? const Color(0xFF1A1A1A)),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -263,7 +263,7 @@ class DistanceBadge extends StatelessWidget {
           Icon(
             Icons.location_on_rounded,
             size: 14,
-            color: color ?? const Color(0xFF0066FF),
+            color: color != null ? Colors.black : Colors.white,
           ),
           const SizedBox(width: 4),
           Text(
@@ -271,7 +271,7 @@ class DistanceBadge extends StatelessWidget {
             style: GoogleFonts.inter(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: color ?? const Color(0xFF0066FF),
+              color: color != null ? Colors.black : Colors.white,
             ),
           ),
         ],

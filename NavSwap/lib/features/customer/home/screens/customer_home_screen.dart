@@ -86,27 +86,24 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFFF0F0F0),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF0066FF), Color(0xFF7B61FF)],
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.electric_bolt,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
+            // Container(
+            //   padding: const EdgeInsets.all(8),
+            //   decoration: BoxDecoration(
+            //     color: const Color(0xFF000000),
+            //     borderRadius: BorderRadius.circular(12),
+            //   ),
+            //   child: Image.asset(
+            //     'assets/icons/LogoBackgroundRemoved.png',
+            //     fit: BoxFit.contain,
+            //   ),
+            // ),
+            // const SizedBox(width: 12),
             Text(
               'NAVSWAP',
               style: GoogleFonts.inter(
@@ -227,22 +224,12 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
 
   Widget _buildWelcomeCard() {
     return Container(
-      height: 200,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF0066FF),
-            Color(0xFF7B61FF),
-            Color(0xFF00D9A3),
-          ],
-          stops: [0.0, 0.5, 1.0],
-        ),
+        color: const Color(0xFF1A1A1A),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0066FF).withOpacity(0.3),
+            color: Colors.black.withOpacity(0.15),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -335,6 +322,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                     ),
                   ],
                 ),
+                const SizedBox(height: 8),
                 Row(
                   children: [
                     Expanded(
@@ -344,7 +332,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                         label: const Text('Find Stations'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFF0066FF),
+                          foregroundColor: const Color(0xFF000000),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
@@ -353,21 +341,21 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: IconButton(
-                        onPressed: () {},
-                        icon: const Icon(
-                          Icons.qr_code_scanner,
-                          color: Colors.white,
-                        ),
-                        tooltip: 'Scan QR',
-                      ),
-                    ),
+                    // const SizedBox(width: 12),
+                    // Container(
+                    //   decoration: BoxDecoration(
+                    //     color: Colors.white.withOpacity(0.2),
+                    //     borderRadius: BorderRadius.circular(16),
+                    //   ),
+                    //   child: IconButton(
+                    //     onPressed: () {},
+                    //     icon: const Icon(
+                    //       Icons.qr_code_scanner,
+                    //       color: Colors.white,
+                    //     ),
+                    //     tooltip: 'Scan QR',
+                    //   ),
+                    // ),
                   ],
                 ),
               ],
@@ -380,19 +368,19 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
 
   Widget _buildQuickActions() {
     final actions = [
-      _ActionItem(
-        icon: Icons.qr_code_scanner,
-        label: 'Scan QR',
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0066FF), Color(0xFF0052CC)],
-        ),
-        onTap: () {},
-      ),
+      // _ActionItem(
+      //   icon: Icons.qr_code_scanner,
+      //   label: 'Scan QR',
+      //   gradient: const LinearGradient(
+      //     colors: [Color(0xFF000000), Color(0xFF1A1A1A)],
+      //   ),
+      //   onTap: () {},
+      // ),
       _ActionItem(
         icon: Icons.map_outlined,
         label: 'Map View',
         gradient: const LinearGradient(
-          colors: [Color(0xFF7B61FF), Color(0xFF5B42CC)],
+          colors: [Color(0xFF2A2A2A), Color(0xFF1A1A1A)],
         ),
         onTap: () => context.push('/customer/stations'),
       ),
@@ -400,7 +388,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
         icon: Icons.history,
         label: 'History',
         gradient: const LinearGradient(
-          colors: [Color(0xFF00D9A3), Color(0xFF00B386)],
+          colors: [Color(0xFF4A4A4A), Color(0xFF3A3A3A)],
         ),
         onTap: () => setState(() => _currentIndex = 3),
       ),
@@ -408,7 +396,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
         icon: Icons.favorite_outline,
         label: 'Favorites',
         gradient: const LinearGradient(
-          colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+          colors: [Color(0xFF6A6A6A), Color(0xFF5A5A5A)],
         ),
         onTap: () => context.push('/customer/favorites'),
       ),
@@ -422,7 +410,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
           style: GoogleFonts.inter(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: const Color(0xFF0F172A),
+            color: const Color(0xFF000000),
           ),
         ),
         const SizedBox(height: 16),
@@ -462,7 +450,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
               style: GoogleFonts.inter(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF0F172A),
+                color: const Color(0xFF000000),
               ),
             ),
             TextButton.icon(
@@ -470,7 +458,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
               icon: const Icon(Icons.arrow_forward, size: 16),
               label: const Text('View All'),
               style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF0066FF),
+                foregroundColor: const Color(0xFF000000),
               ),
             ),
           ],
@@ -504,7 +492,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
           style: GoogleFonts.inter(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: const Color(0xFF0F172A),
+            color: const Color(0xFF000000),
           ),
         ),
         const SizedBox(height: 12),
@@ -512,13 +500,13 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
           title: 'Battery Swap Completed',
           subtitle: 'Station Alpha • 2 hours ago',
           icon: Icons.check_circle_rounded,
-          iconColor: const Color(0xFF10B981),
+          iconColor: const Color(0xFF000000),
         ),
         _ActivityCard(
           title: 'Payment Successful',
           subtitle: '₹150 • 2 hours ago',
           icon: Icons.payments_rounded,
-          iconColor: const Color(0xFF3B82F6),
+          iconColor: const Color(0xFF333333),
         ),
       ],
     );
@@ -640,7 +628,7 @@ class _StationCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFFE2E8F0),
+          color: const Color(0xFFE0E0E0),
           width: 1,
         ),
         boxShadow: [
@@ -665,11 +653,7 @@ class _StationCard extends StatelessWidget {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF0066FF), Color(0xFF00D9A3)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    color: const Color(0xFF1A1A1A),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Icon(
@@ -689,7 +673,7 @@ class _StationCard extends StatelessWidget {
                         style: GoogleFonts.inter(
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
-                          color: const Color(0xFF0F172A),
+                          color: const Color(0xFF000000),
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -698,14 +682,14 @@ class _StationCard extends StatelessWidget {
                           Icon(
                             Icons.location_on_outlined,
                             size: 14,
-                            color: const Color(0xFF64748B),
+                            color: const Color(0xFF8A8A8A),
                           ),
                           const SizedBox(width: 4),
                           Text(
                             distance,
                             style: GoogleFonts.inter(
                               fontSize: 13,
-                              color: const Color(0xFF64748B),
+                              color: const Color(0xFF8A8A8A),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -716,10 +700,10 @@ class _StationCard extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: isLow
-                                  ? const Color(0xFFFEE2E2)
+                                  ? const Color(0xFF000000)
                                   : isMedium
-                                      ? const Color(0xFFFEF3C7)
-                                      : const Color(0xFFD1FAE5),
+                                      ? const Color(0xFF3A3A3A)
+                                      : const Color(0xFF1A1A1A),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Row(
@@ -728,11 +712,7 @@ class _StationCard extends StatelessWidget {
                                 Icon(
                                   Icons.battery_charging_full_rounded,
                                   size: 14,
-                                  color: isLow
-                                      ? const Color(0xFFEF4444)
-                                      : isMedium
-                                          ? const Color(0xFFF59E0B)
-                                          : const Color(0xFF10B981),
+                                  color: Colors.white,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -740,11 +720,7 @@ class _StationCard extends StatelessWidget {
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
-                                    color: isLow
-                                        ? const Color(0xFFEF4444)
-                                        : isMedium
-                                            ? const Color(0xFFF59E0B)
-                                            : const Color(0xFF10B981),
+                                    color: Colors.white,
                                   ),
                                 ),
                               ],
@@ -758,7 +734,7 @@ class _StationCard extends StatelessWidget {
                 const Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 16,
-                  color: Color(0xFF94A3B8),
+                  color: Color(0xFFAAAAAA),
                 ),
               ],
             ),
@@ -827,7 +803,7 @@ class _ActivityCard extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontWeight: FontWeight.w600,
                     fontSize: 15,
-                    color: const Color(0xFF0F172A),
+                    color: const Color(0xFF000000),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -835,7 +811,7 @@ class _ActivityCard extends StatelessWidget {
                   subtitle,
                   style: GoogleFonts.inter(
                     fontSize: 13,
-                    color: const Color(0xFF64748B),
+                    color: const Color(0xFF8A8A8A),
                   ),
                 ),
               ],

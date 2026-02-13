@@ -14,7 +14,7 @@ class _TransporterDashboardScreenState extends ConsumerState<TransporterDashboar
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: const Color(0xFFF0F0F0),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -57,7 +57,7 @@ class _TransporterDashboardScreenState extends ConsumerState<TransporterDashboar
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [Color(0xFF4A90E2), Color(0xFF6BA5E7)]),
+        gradient: const LinearGradient(colors: [Color(0xFF1A1A1A), Color(0xFF000000)]),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -104,10 +104,10 @@ class _TransporterDashboardScreenState extends ConsumerState<TransporterDashboar
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF6B4A).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  color: const Color(0xFF1A1A1A),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text('In Progress', style: TextStyle(color: Color(0xFFFF6B4A), fontSize: 12)),
+                child: const Text('In Progress', style: TextStyle(color: Colors.white, fontSize: 12)),
               ),
             ],
           ),
@@ -116,7 +116,7 @@ class _TransporterDashboardScreenState extends ConsumerState<TransporterDashboar
           const SizedBox(height: 8),
           const Row(children: [Icon(Icons.arrow_downward, size: 16), SizedBox(width: 4), Text('Drop: Station Beta')]),
           const SizedBox(height: 12),
-          LinearProgressIndicator(value: 0.6, backgroundColor: Colors.grey[200], valueColor: const AlwaysStoppedAnimation(Color(0xFF4CAF50))),
+          LinearProgressIndicator(value: 0.6, backgroundColor: Colors.grey[200], valueColor: const AlwaysStoppedAnimation(Color(0xFF000000))),
           const SizedBox(height: 8),
           const Text('60% Complete', style: TextStyle(fontSize: 12, color: Color(0xFF6B6B6B))),
         ],

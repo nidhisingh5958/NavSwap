@@ -23,15 +23,17 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     Widget buttonChild;
 
     if (isLoading) {
-      buttonChild = const SizedBox(
+      buttonChild = SizedBox(
         height: 20,
         width: 20,
         child: CircularProgressIndicator(
           strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
         ),
       );
     } else if (icon != null) {
@@ -66,13 +68,16 @@ class CustomButton extends StatelessWidget {
           width: width,
           height: height,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF0066FF), Color(0xFF00D9A3)],
+            gradient: LinearGradient(
+              colors: [
+                colorScheme.primary.withOpacity(0.95),
+                colorScheme.primary,
+              ],
             ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF0066FF).withOpacity(0.3),
+                color: Colors.black.withOpacity(0.2),
                 blurRadius: 12,
                 offset: const Offset(0, 6),
               ),
@@ -98,7 +103,7 @@ class CustomButton extends StatelessWidget {
           child: OutlinedButton(
             onPressed: isLoading ? null : onPressed,
             style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Color(0xFF0066FF), width: 2),
+              side: BorderSide(color: colorScheme.primary, width: 2),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -114,7 +119,7 @@ class CustomButton extends StatelessWidget {
           child: TextButton(
             onPressed: isLoading ? null : onPressed,
             style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFF0066FF),
+              foregroundColor: colorScheme.primary,
             ),
             child: buttonChild,
           ),
@@ -126,12 +131,12 @@ class CustomButton extends StatelessWidget {
           height: height,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+              colors: [Color(0xFF2B2B2B), Color(0xFF111111)],
             ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFEF4444).withOpacity(0.3),
+                color: Colors.black.withOpacity(0.25),
                 blurRadius: 12,
                 offset: const Offset(0, 6),
               ),

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 /// A modern, reusable card widget with glassmorphism effects
@@ -30,37 +32,54 @@ class GlassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final effectiveBorderRadius = borderRadius ?? BorderRadius.circular(20);
+    final theme = Theme.of(context);
+    final surfaceColor =
+        backgroundColor ?? theme.colorScheme.surface;
+    final borderColor = theme.colorScheme.onSurface.withOpacity(0.1);
+
+    final boxShadow = elevation > 0
+        ? [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 8 * elevation,
+              offset: Offset(0, 2 * elevation),
+            ),
+          ]
+        : [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ];
 
     Widget content = Container(
       width: width,
       height: height,
-      padding: padding ?? const EdgeInsets.all(16),
       margin: margin,
       decoration: BoxDecoration(
-        color: backgroundColor ?? Colors.white,
-        gradient: gradient,
         borderRadius: effectiveBorderRadius,
-        border: Border.all(
-          color: const Color(0xFFE2E8F0),
-          width: 1,
-        ),
-        boxShadow: elevation > 0
-            ? [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10 * elevation,
-                  offset: Offset(0, 2 * elevation),
-                ),
-              ]
-            : [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+        boxShadow: boxShadow,
       ),
-      child: child,
+      child: ClipRRect(
+        borderRadius: effectiveBorderRadius,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+          child: Container(
+            padding: padding ?? const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: surfaceColor,
+              gradient: gradient,
+              borderRadius: effectiveBorderRadius,
+              border: Border.all(
+                color: borderColor,
+                width: 1,
+              ),
+            ),
+            child: child,
+          ),
+        ),
+      ),
     );
 
     if (onTap != null) {
@@ -202,9 +221,9 @@ class _ShimmerCardState extends State<ShimmerCard>
               begin: Alignment(_animation.value, 0),
               end: const Alignment(2, 0),
               colors: const [
-                Color(0xFFE2E8F0),
-                Color(0xFFF1F5F9),
-                Color(0xFFE2E8F0),
+                Color(0xFFE0E0E0),
+                Color(0xFFF5F5F5),
+                Color(0xFFE0E0E0),
               ],
             ),
           ),
