@@ -1,9 +1,10 @@
 class ApiConstants {
   // Base URLs
-  static const String apiGatewayBaseUrl = 'http://localhost:3000';
-  static const String recommendationServiceBaseUrl = 'http://localhost:3005';
-  static const String ingestionServiceBaseUrl = 'http://localhost:3001';
-  static const String aiServiceBaseUrl = 'http://localhost:8081';
+  static const String apiGatewayBaseUrl =
+      'https://lang-continues-aqua-hoping.trycloudflare.com:3000';
+  // static const String recommendationServiceBaseUrl = 'http://localhost:3005';
+  // static const String ingestionServiceBaseUrl = 'http://localhost:3001';
+  // static const String aiServiceBaseUrl = 'http://localhost:8081';
 
   // ==================== HEALTH & STATUS ====================
   static const String healthEndpoint = '/health';

@@ -36,7 +36,7 @@ class DioService {
     // Recommendation Service Dio
     _recommendationDio = Dio(
       BaseOptions(
-        baseUrl: ApiConstants.recommendationServiceBaseUrl,
+        baseUrl: ApiConstants.apiGatewayBaseUrl,
         connectTimeout: ApiConstants.connectionTimeout,
         receiveTimeout: ApiConstants.receiveTimeout,
         headers: {
@@ -48,7 +48,7 @@ class DioService {
     // Ingestion Service Dio
     _ingestionDio = Dio(
       BaseOptions(
-        baseUrl: ApiConstants.ingestionServiceBaseUrl,
+        baseUrl: ApiConstants.apiGatewayBaseUrl,
         connectTimeout: ApiConstants.connectionTimeout,
         receiveTimeout: ApiConstants.receiveTimeout,
         headers: {

@@ -109,6 +109,58 @@ class MockStationsData {
           amenities: ['Parking', 'Wifi', 'Charging', 'Café'],
           imageUrl: 'https://via.placeholder.com/300x200?text=Sunset+Energy',
         ),
+        // Fisherman's Wharf
+        MockStationData(
+          id: 'st_009',
+          name: 'Wharf Power Point',
+          latitude: 37.8080,
+          longitude: -122.4177,
+          availableSlots: 6,
+          totalSlots: 10,
+          waitTime: 7,
+          reliability: 4.7,
+          amenities: ['Wifi', 'Restaurant', 'Parking'],
+          imageUrl: 'https://via.placeholder.com/300x200?text=Wharf+Power',
+        ),
+        // North Beach
+        MockStationData(
+          id: 'st_010',
+          name: 'North Beach Energy Hub',
+          latitude: 37.8006,
+          longitude: -122.4101,
+          availableSlots: 4,
+          totalSlots: 9,
+          waitTime: 9,
+          reliability: 4.6,
+          amenities: ['Café', 'Wifi', 'Charging'],
+          imageUrl: 'https://via.placeholder.com/300x200?text=North+Beach',
+        ),
+        // Financial District
+        MockStationData(
+          id: 'st_011',
+          name: 'Financial District Plaza',
+          latitude: 37.7946,
+          longitude: -122.3999,
+          availableSlots: 8,
+          totalSlots: 16,
+          waitTime: 4,
+          reliability: 4.9,
+          amenities: ['Wifi', 'Parking', 'Lounge', 'Restaurant'],
+          imageUrl: 'https://via.placeholder.com/300x200?text=Financial+Plaza',
+        ),
+        // Potrero Hill
+        MockStationData(
+          id: 'st_012',
+          name: 'Potrero Swift Swap',
+          latitude: 37.7580,
+          longitude: -122.4019,
+          availableSlots: 5,
+          totalSlots: 10,
+          waitTime: 8,
+          reliability: 4.5,
+          amenities: ['Parking', 'Restroom', 'Wifi'],
+          imageUrl: 'https://via.placeholder.com/300x200?text=Potrero+Swift',
+        ),
       ];
 
   /// Get nearest stations from a given location

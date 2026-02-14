@@ -11,43 +11,9 @@ class CustomerHomeScreen extends StatefulWidget {
 
 class _CustomerHomeScreenState extends State<CustomerHomeScreen>
     with SingleTickerProviderStateMixin {
-  int _currentIndex = 0;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-
-  final List<_NavItem> _navItems = const [
-    _NavItem(
-      icon: Icons.home_outlined,
-      selectedIcon: Icons.home,
-      label: 'Home',
-      route: '/customer/home',
-    ),
-    _NavItem(
-      icon: Icons.location_on_outlined,
-      selectedIcon: Icons.location_on,
-      label: 'Stations',
-      route: '/customer/stations',
-    ),
-    _NavItem(
-      icon: Icons.queue_outlined,
-      selectedIcon: Icons.queue,
-      label: 'Queue',
-      route: '/customer/queue',
-    ),
-    _NavItem(
-      icon: Icons.history_outlined,
-      selectedIcon: Icons.history,
-      label: 'History',
-      route: '/customer/history',
-    ),
-    _NavItem(
-      icon: Icons.person_outline,
-      selectedIcon: Icons.person,
-      label: 'Profile',
-      route: '/customer/profile',
-    ),
-  ];
 
   @override
   void initState() {
@@ -169,39 +135,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
             ),
           );
         },
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: NavigationBar(
-          selectedIndex: _currentIndex,
-          onDestinationSelected: (index) {
-            setState(() => _currentIndex = index);
-          },
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          destinations: _navItems.map((item) {
-            return NavigationDestination(
-              icon: Icon(item.icon),
-              selectedIcon: Icon(item.selectedIcon),
-              label: item.label,
-            );
-          }).toList(),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/customer/ai-chat'),
-        tooltip: 'AI Assistant',
-        elevation: 6,
-        child: const Icon(Icons.auto_awesome),
       ),
     );
   }
@@ -329,9 +262,9 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () => context.push('/customer/stations'),
-                        icon: const Icon(Icons.location_on, size: 20),
-                        label: const Text('Find Stations'),
+                        onPressed: () => context.push('/customer/mock-map'),
+                        icon: const Icon(Icons.map, size: 20),
+                        label: const Text('View Map'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: const Color(0xFF000000),
@@ -343,23 +276,26 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                         ),
                       ),
                     ),
-                    // const SizedBox(width: 12),
-                    // Container(
-                    //   decoration: BoxDecoration(
-                    //     color: Colors.white.withOpacity(0.2),
-                    //     borderRadius: BorderRadius.circular(16),
-                    //   ),
-                    //   child: IconButton(
-                    //     onPressed: () {},
-                    //     icon: const Icon(
-                    //       Icons.qr_code_scanner,
-                    //       color: Colors.white,
-                    //     ),
-                    //     tooltip: 'Scan QR',
-                    //   ),
-                    // ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () => context.push('/customer/stations'),
+                        icon: const Icon(Icons.location_on, size: 20),
+                        label: const Text('Find Stations'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white.withOpacity(0.2),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
+                const SizedBox(height: 16),
               ],
             ),
           ),
@@ -392,7 +328,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
         gradient: const LinearGradient(
           colors: [Color(0xFF4A4A4A), Color(0xFF3A3A3A)],
         ),
-        onTap: () => setState(() => _currentIndex = 3),
+        onTap: () => context.push('/customer/history'),
       ),
       _ActionItem(
         icon: Icons.favorite_outline,
@@ -527,20 +463,6 @@ class _ActionItem {
     required this.label,
     required this.gradient,
     required this.onTap,
-  });
-}
-
-class _NavItem {
-  final IconData icon;
-  final IconData selectedIcon;
-  final String label;
-  final String route;
-
-  const _NavItem({
-    required this.icon,
-    required this.selectedIcon,
-    required this.label,
-    required this.route,
   });
 }
 

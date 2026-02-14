@@ -198,8 +198,19 @@ class _QueueStatusScreenState extends ConsumerState<QueueStatusScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      _buildInfoRow(Icons.location_on, 'Station',
-                          queueState.stationName ?? 'Station Alpha'),
+                      _buildInfoRow(
+                        Icons.bookmark,
+                        'Booked Station',
+                        queueState.stationName != null
+                            ? '${queueState.stationName} • Bay 3'
+                            : 'Not booked',
+                      ),
+                      const SizedBox(height: 8),
+                      _buildInfoRow(
+                        Icons.location_on,
+                        'Station',
+                        queueState.stationName ?? 'Station Alpha',
+                      ),
                       const SizedBox(height: 8),
                       _buildInfoRow(
                           Icons.battery_full, 'Battery Availability', '85%'),

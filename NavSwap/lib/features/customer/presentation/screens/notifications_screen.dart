@@ -115,8 +115,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             _selectedTab = label;
           });
         },
-        backgroundColor: Colors.grey[200],
-        selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
+        labelStyle: TextStyle(
+          color: isSelected ? Colors.white : Colors.black87,
+        ),
+        backgroundColor: const Color.fromARGB(141, 238, 238, 238),
+        selectedColor: Theme.of(context).primaryColor,
       ),
     );
   }

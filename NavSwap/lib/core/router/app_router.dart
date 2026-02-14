@@ -11,8 +11,8 @@ import 'package:navswap_app/features/customer/presentation/screens/history_scree
 import 'package:navswap_app/features/customer/presentation/screens/notifications_screen.dart';
 import 'package:navswap_app/features/customer/presentation/screens/queue_status_screen.dart';
 import 'package:navswap_app/features/customer/presentation/screens/station_detail_screen.dart';
-import 'package:navswap_app/features/customer/presentation/screens/station_list_screen.dart';
 import 'package:navswap_app/features/customer/presentation/screens/station_map_screen.dart';
+import 'package:navswap_app/features/customer/presentation/screens/mock_map_view_screen.dart';
 import 'package:navswap_app/features/transporter/presentation/screens/performance_screen.dart';
 import 'package:navswap_app/features/transporter/presentation/screens/task_detail_screen.dart';
 import 'package:navswap_app/features/transporter/presentation/screens/task_list_screen.dart';
@@ -23,6 +23,7 @@ import 'package:navswap_app/features/transporter/presentation/screens/transporte
 
 // Customer Screens
 import '../../features/customer/home/screens/customer_home_screen.dart';
+import '../../features/customer/home/screens/customer_shell_screen.dart';
 import '../../features/role/role_selection_screen.dart';
 
 // Transporter Screens
@@ -81,16 +82,53 @@ final routerProvider = Provider<GoRouter>((ref) {
       //   builder: (context, state) => const AccountPendingScreen(),
       // ),
 
-      // Customer Routes
-      GoRoute(
-        path: '/customer/home',
-        name: 'customer-home',
-        builder: (context, state) => const CustomerHomeScreen(),
+      // Customer Routes with Shell (Bottom Navigation Bar)
+      ShellRoute(
+        builder: (context, state, child) {
+          return CustomerShellScreen(child: child);
+        },
+        routes: [
+          GoRoute(
+            path: '/customer/home',
+            name: 'customer-home',
+            builder: (context, state) => const CustomerHomeScreen(),
+          ),
+          GoRoute(
+            path: '/customer/stations',
+            name: 'customer-stations',
+            builder: (context, state) => const StationMapScreen(),
+          ),
+          GoRoute(
+            path: '/customer/queue',
+            name: 'customer-queue',
+            builder: (context, state) {
+              final stationId =
+                  state.uri.queryParameters['stationId'] ?? 'ST_101';
+              final userId = state.uri.queryParameters['userId'] ?? 'USR_001';
+              return QueueStatusScreen(
+                stationId: stationId,
+                userId: userId,
+              );
+            },
+          ),
+          GoRoute(
+            path: '/customer/history',
+            name: 'customer-history',
+            builder: (context, state) => const HistoryScreen(),
+          ),
+          GoRoute(
+            path: '/customer/profile',
+            name: 'customer-profile',
+            builder: (context, state) => const CustomerProfileScreen(),
+          ),
+        ],
       ),
+
+      // Customer Routes without Shell (Full Screen)
       GoRoute(
-        path: '/customer/stations',
-        name: 'customer-stations',
-        builder: (context, state) => const StationMapScreen(),
+        path: '/customer/mock-map',
+        name: 'customer-mock-map',
+        builder: (context, state) => const MockMapViewScreen(),
       ),
       GoRoute(
         path: '/customer/station/:id',
@@ -99,29 +137,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           final id = state.pathParameters['id']!;
           return StationDetailScreen(stationId: id);
         },
-      ),
-      GoRoute(
-        path: '/customer/queue',
-        name: 'customer-queue',
-        builder: (context, state) {
-          // Extract stationId and userId from query parameters
-          final stationId = state.uri.queryParameters['stationId'] ?? 'ST_101';
-          final userId = state.uri.queryParameters['userId'] ?? 'USR_001';
-          return QueueStatusScreen(
-            stationId: stationId,
-            userId: userId,
-          );
-        },
-      ),
-      GoRoute(
-        path: '/customer/history',
-        name: 'customer-history',
-        builder: (context, state) => const HistoryScreen(),
-      ),
-      GoRoute(
-        path: '/customer/profile',
-        name: 'customer-profile',
-        builder: (context, state) => const CustomerProfileScreen(),
       ),
       GoRoute(
         path: '/customer/notifications',

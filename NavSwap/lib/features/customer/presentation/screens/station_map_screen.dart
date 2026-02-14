@@ -1,700 +1,357 @@
-import 'dart:math' as math;
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../data/mock/mock_stations.dart';
-import '../../data/services/route_optimizer.dart';
-import '../../providers/recommendation_provider.dart';
-import '../widgets/route_display_widget.dart';
 
-class StationMapScreen extends ConsumerStatefulWidget {
+class StationMapScreen extends StatefulWidget {
   const StationMapScreen({super.key});
 
   @override
-  ConsumerState<StationMapScreen> createState() => _StationMapScreenState();
+  State<StationMapScreen> createState() => _StationMapScreenState();
 }
 
-class _StationMapScreenState extends ConsumerState<StationMapScreen> {
-  GoogleMapController? _mapController;
-  Set<Marker> _markers = {};
-  final Set<Polyline> _polylines = {};
-  StationRecommendation? _selectedStation;
-  RouteDetails? _selectedRoute;
-  bool _useMockData = false;
-  MockStationData? _selectedMockStation;
-  LatLng? _userLocation;
+class _StationMapScreenState extends State<StationMapScreen> {
+  MockStationData? _selectedStation;
+  final TextEditingController _searchController = TextEditingController();
+
+  // User location coordinates
+  double _userLat = 37.7749;
+  double _userLng = -122.4194;
+
+  List<MockStationData> _nearestStations = [];
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeMap();
-    });
-  }
-
-  Future<void> _initializeMap() async {
-    try {
-      // Try to fetch real recommendations
-      ref.read(recommendationProvider.notifier).fetchRecommendations();
-    } catch (e) {
-      // Fallback to mock data on error
-      _useFallbackMockData();
-    }
-  }
-
-  void _useFallbackMockData() {
-    setState(() {
-      _useMockData = true;
-      // Default user location (San Francisco)
-      _userLocation = const LatLng(37.7749, -122.4194);
-    });
-
-    _updateMarkersWithMockData();
-
-    // Show snackbar indicating mock data usage
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content:
-              Text('Using offline map data. Some features may be limited.'),
-          duration: Duration(seconds: 3),
-        ),
-      );
-    }
-  }
-
-  void _updateMarkersWithMockData() {
-    if (_userLocation == null) return;
-
-    final nearestStations = MockStationsData.getNearestStations(
-      latitude: _userLocation!.latitude,
-      longitude: _userLocation!.longitude,
-      limit: 8,
-    );
-
-    final newMarkers = <Marker>{};
-
-    // Add user location marker
-    newMarkers.add(
-      Marker(
-        markerId: const MarkerId('user_location'),
-        position: _userLocation!,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-        infoWindow: const InfoWindow(title: 'Your Location'),
-      ),
-    );
-
-    // Add station markers
-    for (final station in nearestStations) {
-      newMarkers.add(
-        Marker(
-          markerId: MarkerId(station.id),
-          position: station.latLng,
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-            station.id == _selectedMockStation?.id
-                ? BitmapDescriptor.hueGreen
-                : BitmapDescriptor.hueRed,
-          ),
-          infoWindow: InfoWindow(
-            title: station.name,
-            snippet: '${station.distance.toStringAsFixed(1)} km away',
-          ),
-          onTap: () {
-            _selectMockStation(station);
-          },
-        ),
-      );
-    }
-
-    setState(() {
-      _markers = newMarkers;
-    });
-
-    // Animate camera to show user location
-    if (_mapController != null) {
-      _mapController!.animateCamera(
-        CameraUpdate.newLatLngZoom(_userLocation!, 13.0),
-      );
-    }
+    _loadStations();
   }
 
   @override
   void dispose() {
-    _mapController?.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
-  void _selectMockStation(MockStationData station) {
+  void _loadStations() {
     setState(() {
-      _selectedMockStation = station;
+      _nearestStations = MockStationsData.getNearestStations(
+        latitude: _userLat,
+        longitude: _userLng,
+        limit: 12,
+      );
     });
-
-    // Calculate and display route
-    if (_userLocation != null) {
-      final routePoints = RouteOptimizer.calculateOptimalRoute(
-        userLocation: _userLocation!,
-        destinationLocation: station.latLng,
-      );
-
-      final estimatedTime = RouteOptimizer.getEstimatedTime(
-        userLocation: _userLocation!,
-        destinationLocation: station.latLng,
-      );
-
-      final totalDistance = RouteOptimizer.getTotalDistance(routePoints);
-
-      setState(() {
-        _selectedRoute = RouteDetails(
-          polylinePoints: routePoints,
-          totalDistance: totalDistance,
-          estimatedTime: estimatedTime,
-        );
-
-        // Add polyline to map
-        _polylines.clear();
-        _polylines.add(
-          Polyline(
-            polylineId: PolylineId(station.id),
-            points: routePoints,
-            width: 5,
-            color: const Color(0xFF1976D2),
-            geodesic: true,
-            patterns: [
-              PatternItem.dash(20),
-              PatternItem.gap(10),
-            ],
-          ),
-        );
-      });
-
-      // Animate camera to show route
-      _animateCameraToShowRoute(routePoints);
-    }
   }
 
-  void _animateCameraToShowRoute(List<LatLng> route) {
-    if (route.isEmpty || _mapController == null) return;
+  void _selectStation(MockStationData station) {
+    setState(() {
+      _selectedStation = station;
+    });
+  }
 
-    double minLat = route[0].latitude;
-    double maxLat = route[0].latitude;
-    double minLng = route[0].longitude;
-    double maxLng = route[0].longitude;
+  void _performSearch() {
+    // Mock search - in real app would geocode the location
+    final location = _searchController.text.trim();
+    if (location.isEmpty) return;
 
-    for (final point in route) {
-      minLat = math.min(minLat, point.latitude);
-      maxLat = math.max(maxLat, point.latitude);
-      minLng = math.min(minLng, point.longitude);
-      maxLng = math.max(maxLng, point.longitude);
-    }
+    // Mock: Change user location based on search
+    // For demo, just reload same stations
+    _loadStations();
 
-    final bounds = LatLngBounds(
-      southwest: LatLng(minLat, minLng),
-      northeast: LatLng(maxLat, maxLng),
-    );
-
-    _mapController!.animateCamera(
-      CameraUpdate.newLatLngBounds(bounds, 100),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Searching near: $location'),
+        duration: const Duration(seconds: 2),
+      ),
     );
   }
 
-  void _onMapCreated(GoogleMapController controller) {
-    _mapController = controller;
-    if (!_useMockData) {
-      // Map will be updated by the listener
-    } else {
-      _updateMarkersWithMockData();
-    }
+  void _navigateToQueue(MockStationData station) {
+    context.push('/customer/queue?stationId=${station.id}&userId=USR_001');
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(recommendationProvider);
-
-    ref.listen<RecommendationState>(recommendationProvider, (previous, next) {
-      if (next.userLocation != null && !next.isLoading) {
-        setState(() {
-          _useMockData = false;
-          _userLocation = LatLng(
-            next.userLocation!.latitude,
-            next.userLocation!.longitude,
-          );
-        });
-        _updateMarkersFromState(next);
-      }
-
-      if (next.error != null) {
-        _useFallbackMockData();
-      }
-    });
-
-    // Use mock data if no user location from provider
-    if (!_useMockData && state.userLocation == null) {
-      // Check if we should fallback
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (state.userLocation == null && !_useMockData) {
-          _useFallbackMockData();
-        }
-      });
-    }
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-            _useMockData ? 'Nearby Stations (Offline)' : 'Nearby Stations'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _useMockData
-                ? () => _useFallbackMockData()
-                : () {
-                    ref
-                        .read(recommendationProvider.notifier)
-                        .fetchRecommendations();
-                  },
-          ),
-        ],
-      ),
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // Google Map
-          (_userLocation == null && !_useMockData)
-              ? const Center(child: CircularProgressIndicator())
-              : GoogleMap(
-                  onMapCreated: _onMapCreated,
-                  initialCameraPosition: CameraPosition(
-                    target: _userLocation ?? const LatLng(37.7749, -122.4194),
-                    zoom: 13.0,
-                  ),
-                  markers: _markers,
-                  polylines: _polylines,
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: true,
-                  zoomControlsEnabled: false,
-                  mapToolbarEnabled: false,
-                ),
+          // Mock Map
+          _buildMockMap(),
 
-          // Loading Overlay
-          if (state.isLoading && !_useMockData)
-            Container(
-              color: Colors.black26,
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
+          // Search Bar at Top
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            left: 16,
+            right: 16,
+            child: _buildSearchBar(),
+          ),
 
-          // Route Info Card - Mock Data
-          if (_selectedRoute != null && _useMockData)
+          // Selected Station Details (Bottom)
+          if (_selectedStation != null)
             Positioned(
               bottom: 16,
               left: 16,
               right: 16,
-              child: RouteInfoWidget(
-                distance: _selectedRoute!.getDistanceString(),
-                estimatedTime: _selectedRoute!.getTimeString(),
-                onNavigate: _selectedMockStation != null
-                    ? () {
-                        _showMockStationDetails(_selectedMockStation!);
-                      }
-                    : null,
-              ),
+              child: _buildStationDetailsCard(_selectedStation!),
             ),
 
-          // Selected Mock Station Card
-          if (_selectedMockStation != null && _useMockData)
-            Positioned(
-              bottom: _selectedRoute != null ? 120 : 16,
-              left: 16,
-              right: 16,
-              child: _MockStationDetailsCard(
-                station: _selectedMockStation!,
-                onClose: () {
-                  setState(() {
-                    _selectedMockStation = null;
-                    _selectedRoute = null;
-                    _polylines.clear();
-                  });
-                },
-                onNavigate: () {
-                  _showMockStationDetails(_selectedMockStation!);
-                },
-              ),
-            ),
-
-          // Recommended Station Card - Real Data
-          if (state.recommendedStation != null &&
-              _selectedStation == null &&
-              !_useMockData)
+          // Legend (Bottom Left)
+          if (_selectedStation == null)
             Positioned(
               bottom: 16,
               left: 16,
-              right: 16,
-              child: _RecommendedStationCard(
-                station: state.recommendedStation!,
-                requestId: state.requestId,
-                onNavigate: () {
-                  context.push(
-                      '/customer/station/${state.recommendedStation!.id}');
-                },
-              ),
+              child: _buildLegend(),
             ),
 
-          // Selected Station Card - Real Data
-          if (_selectedStation != null && !_useMockData)
+          // Station Count (Bottom Right)
+          if (_selectedStation == null)
             Positioned(
               bottom: 16,
-              left: 16,
               right: 16,
-              child: _StationDetailsCard(
-                station: _selectedStation!,
-                isRecommended:
-                    _selectedStation!.id == state.recommendedStation?.id,
-                onClose: () {
-                  setState(() {
-                    _selectedStation = null;
-                  });
-                },
-                onNavigate: () {
-                  context.push('/customer/station/${_selectedStation!.id}');
-                },
-              ),
-            ),
-
-          // Request ID Display - Real Data
-          if (state.requestId != null &&
-              _selectedStation == null &&
-              !_useMockData)
-            Positioned(
-              top: 16,
-              left: 16,
-              right: 16,
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.info_outline, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Request ID: ${state.requestId}',
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.copy, size: 18),
-                      onPressed: () {
-                        // Copy to clipboard
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-          // Offline Indicator
-          if (_useMockData)
-            Positioned(
-              top: 16,
-              left: 16,
-              right: 16,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.amber,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                    ),
-                  ],
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.wifi_off, size: 16, color: Colors.white),
-                    SizedBox(width: 8),
-                    Text(
-                      'Offline Mode - Using Mock Data',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              child: _buildStationCount(),
             ),
         ],
       ),
     );
   }
 
-  void _updateMarkersFromState(RecommendationState state) {
-    if (state.userLocation == null) return;
-
-    final newMarkers = <Marker>{};
-
-    // Add user location marker
-    newMarkers.add(
-      Marker(
-        markerId: const MarkerId('user_location'),
-        position: LatLng(
-          state.userLocation!.latitude,
-          state.userLocation!.longitude,
-        ),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-        infoWindow: const InfoWindow(title: 'Your Location'),
-      ),
-    );
-
-    // Add station markers
-    for (final station in state.stations) {
-      newMarkers.add(
-        Marker(
-          markerId: MarkerId(station.id),
-          position: LatLng(station.lat, station.lon),
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-            station.isRecommended || station.id == state.recommendedStation?.id
-                ? BitmapDescriptor.hueGreen
-                : BitmapDescriptor.hueRed,
-          ),
-          infoWindow: InfoWindow(
-            title: station.name,
-            snippet: '${station.distance.toStringAsFixed(1)} km away',
-          ),
-          onTap: () {
-            setState(() {
-              _selectedStation = station;
-            });
-          },
-        ),
-      );
-    }
-
-    setState(() {
-      _markers = newMarkers;
-    });
-
-    // Move camera to show user location
-    if (_mapController != null && state.userLocation != null) {
-      _mapController!.animateCamera(
-        CameraUpdate.newLatLngZoom(
-          LatLng(
-            state.userLocation!.latitude,
-            state.userLocation!.longitude,
-          ),
-          13.0,
-        ),
-      );
-    }
-  }
-
-  void _showMockStationDetails(MockStationData station) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      builder: (context) => _MockStationDetailsBottomSheet(station: station),
-    );
-  }
-}
-
-/// Mock Station Details Card for display on map
-class _MockStationDetailsCard extends StatelessWidget {
-  final MockStationData station;
-  final VoidCallback onClose;
-  final VoidCallback onNavigate;
-
-  const _MockStationDetailsCard({
-    required this.station,
-    required this.onClose,
-    required this.onNavigate,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildSearchBar() {
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.pop(),
+          ),
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search location...',
+                hintStyle: TextStyle(color: Colors.grey.shade400),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+              ),
+              onSubmitted: (_) => _performSearch(),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            child: IconButton(
+              icon: Icon(Icons.search, color: Colors.blue.shade700),
+              onPressed: _performSearch,
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.blue.shade50,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMockMap() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.blue.shade100,
+            Colors.blue.shade50,
+            Colors.green.shade50,
+          ],
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Grid lines for "streets"
+          CustomPaint(
+            size: Size.infinite,
+            painter: _MapGridPainter(),
+          ),
+
+          // User Location Marker
+          Positioned(
+            left: MediaQuery.of(context).size.width * 0.5 - 20,
+            top: MediaQuery.of(context).size.height * 0.6 - 20,
+            child: _buildUserLocationMarker(),
+          ),
+
+          // Station Markers
+          ..._buildStationMarkers(),
+
+          // Route Line (if station selected)
+          if (_selectedStation != null)
+            CustomPaint(
+              size: Size.infinite,
+              painter: _RoutePainter(
+                startX: MediaQuery.of(context).size.width * 0.5,
+                startY: MediaQuery.of(context).size.height * 0.6,
+                endX: MediaQuery.of(context).size.width *
+                    _getStationOffsetX(_selectedStation!),
+                endY: MediaQuery.of(context).size.height *
+                    _getStationOffsetY(_selectedStation!),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildStationMarkers() {
+    final markers = <Widget>[];
+
+    for (int i = 0; i < _nearestStations.length; i++) {
+      final station = _nearestStations[i];
+      final offsetX = _getStationOffsetX(station);
+      final offsetY = _getStationOffsetY(station);
+
+      markers.add(
+        Positioned(
+          left: MediaQuery.of(context).size.width * offsetX - 20,
+          top: MediaQuery.of(context).size.height * offsetY - 20,
+          child: _buildStationMarker(station),
+        ),
+      );
+    }
+
+    return markers;
+  }
+
+  // Generate pseudo-random but consistent positions for stations
+  double _getStationOffsetX(MockStationData station) {
+    final hash = station.id.hashCode;
+    return 0.2 + ((hash % 60) / 100.0); // Range: 0.2 to 0.8
+  }
+
+  double _getStationOffsetY(MockStationData station) {
+    final hash = station.id.hashCode;
+    return 0.15 + ((hash % 50) / 100.0); // Range: 0.15 to 0.65
+  }
+
+  Widget _buildUserLocationMarker() {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: Colors.blue,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 3),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 8,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: const Icon(Icons.person, color: Colors.white, size: 20),
+    );
+  }
+
+  Widget _buildStationMarker(MockStationData station) {
+    final isSelected = _selectedStation?.id == station.id;
+    final hasSlots = station.availableSlots > 3;
+
+    return GestureDetector(
+      onTap: () => _selectStation(station),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? Colors.green
+                  : hasSlots
+                      ? Colors.blue.shade700
+                      : Colors.orange.shade700,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white,
+                width: isSelected ? 4 : 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 8,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: Icon(
+              Icons.electric_bolt,
+              color: Colors.white,
+              size: isSelected ? 24 : 20,
+            ),
+          ),
+          if (isSelected)
+            Container(
+              margin: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                'Selected',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 9,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStationDetailsCard(MockStationData station) {
+    final routeDistance = station.distance;
+    final routeTime = (routeDistance * 3).round(); // Mock: 3 min per km
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      station.name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.location_on,
-                            size: 14, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${station.distance.toStringAsFixed(1)} km away',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+          // Station Header
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue.shade600, Colors.blue.shade700],
               ),
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: onClose,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            children: [
-              _MockStatChip(
-                icon: Icons.battery_charging_full,
-                label: '${station.availableSlots}/${station.totalSlots}',
-                color: Colors.blue,
-              ),
-              _MockStatChip(
-                icon: Icons.schedule,
-                label: '${station.waitTime}m wait',
-                color: Colors.orange,
-              ),
-              _MockStatChip(
-                icon: Icons.star,
-                label: '${station.reliability}',
-                color: Colors.amber,
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 6,
-            children: station.amenities
-                .map(
-                  (amenity) => Chip(
-                    label: Text(amenity),
-                    labelStyle: const TextStyle(fontSize: 11),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  ),
-                )
-                .toList(),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: onNavigate,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              child: const Text('View Full Details'),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MockStatChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-
-  const _MockStatChip({
-    required this.icon,
-    required this.label,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Bottom sheet showing full details of mock station
-class _MockStationDetailsBottomSheet extends StatelessWidget {
-  final MockStationData station;
-
-  const _MockStationDetailsBottomSheet({required this.station});
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Row(
               children: [
                 Expanded(
                   child: Column(
@@ -703,489 +360,332 @@ class _MockStationDetailsBottomSheet extends StatelessWidget {
                       Text(
                         station.name,
                         style: const TextStyle(
-                          fontSize: 22,
+                          color: Colors.white,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Icon(Icons.location_on,
-                              size: 16, color: Colors.blue),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${station.distance.toStringAsFixed(1)} km away',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.star, size: 16, color: Colors.blue),
-                      const SizedBox(width: 4),
+                      const SizedBox(height: 4),
                       Text(
-                        '${station.reliability}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Availability Section
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue.withOpacity(0.2)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Availability',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${station.availableSlots}/${station.totalSlots} Available',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: LinearProgressIndicator(
-                                value:
-                                    station.availableSlots / station.totalSlots,
-                                minHeight: 8,
-                                backgroundColor: Colors.blue.withOpacity(0.1),
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                    Colors.blue),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Wait Time & Amenities
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.orange.withOpacity(0.2)),
-                    ),
-                    child: Column(
-                      children: [
-                        const Icon(Icons.schedule,
-                            color: Colors.orange, size: 24),
-                        const SizedBox(height: 8),
-                        Text(
-                          '${station.waitTime}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.orange,
-                          ),
-                        ),
-                        const Text(
-                          'min wait',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.green.withOpacity(0.2)),
-                    ),
-                    child: Column(
-                      children: [
-                        const Icon(Icons.check_circle,
-                            color: Colors.green, size: 24),
-                        const SizedBox(height: 8),
-                        Text(
-                          '${station.reliability}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
-                          ),
-                        ),
-                        const Text(
-                          'reliability',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Amenities
-            if (station.amenities.isNotEmpty)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Amenities',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: station.amenities
-                        .map(
-                          (amenity) => Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.check_circle,
-                                    size: 14, color: Colors.green),
-                                const SizedBox(width: 6),
-                                Text(
-                                  amenity,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                ],
-              ),
-            const SizedBox(height: 24),
-
-            // Action Buttons
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.my_location),
-                label: const Text('Navigate to Station'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close),
-                label: const Text('Close'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// Original station recommendation classes remain below
-
-class _RecommendedStationCard extends StatelessWidget {
-  final StationRecommendation station;
-  final String? requestId;
-  final VoidCallback onNavigate;
-
-  const _RecommendedStationCard({
-    required this.station,
-    this.requestId,
-    required this.onNavigate,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 8,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.star, size: 16, color: Colors.green[700]),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Recommended',
+                        '$routeDistance km away • $routeTime min drive',
                         style: TextStyle(
-                          color: Colors.green[700],
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: 13,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const Spacer(),
-                Text(
-                  '${station.distance.toStringAsFixed(1)} km',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              station.name,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                _InfoChip(
-                  icon: Icons.people,
-                  label: '${station.queueLength} in queue',
-                  color: Colors.orange,
-                ),
-                const SizedBox(width: 8),
-                _InfoChip(
-                  icon: Icons.battery_charging_full,
-                  label: '${station.availableBatteries} available',
-                  color: Colors.blue,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: onNavigate,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: const Text('View Details'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _StationDetailsCard extends StatelessWidget {
-  final StationRecommendation station;
-  final bool isRecommended;
-  final VoidCallback onClose;
-  final VoidCallback onNavigate;
-
-  const _StationDetailsCard({
-    required this.station,
-    required this.isRecommended,
-    required this.onClose,
-    required this.onNavigate,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 8,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                if (isRecommended)
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.green[50],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.star, size: 16, color: Colors.green[700]),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Recommended',
-                          style: TextStyle(
-                            color: Colors.green[700],
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: onClose,
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () {
+                    setState(() {
+                      _selectedStation = null;
+                    });
+                  },
                 ),
               ],
             ),
-            Text(
-              station.name,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '${station.distance.toStringAsFixed(1)} km away',
-              style: TextStyle(color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 12),
-            Row(
+          ),
+
+          // Station Details
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
               children: [
-                _InfoChip(
-                  icon: Icons.people,
-                  label: '${station.queueLength} in queue',
-                  color: Colors.orange,
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildInfoCard(
+                        Icons.people_alt_rounded,
+                        'Queue',
+                        '${station.waitTime} people',
+                        Colors.orange,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildInfoCard(
+                        Icons.timer_outlined,
+                        'Wait Time',
+                        '~${station.waitTime} min',
+                        Colors.green,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                _InfoChip(
-                  icon: Icons.battery_charging_full,
-                  label: '${station.availableBatteries} available',
-                  color: Colors.blue,
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildInfoCard(
+                        Icons.battery_charging_full_rounded,
+                        'Available',
+                        '${station.availableSlots}/${station.totalSlots} slots',
+                        station.availableSlots > 5 ? Colors.green : Colors.red,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildInfoCard(
+                        Icons.star_rounded,
+                        'Rating',
+                        '${station.reliability}/5.0',
+                        Colors.amber,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Add to Queue Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _navigateToQueue(station),
+                    icon: const Icon(Icons.add_circle_outline, size: 24),
+                    label: const Text(
+                      'Add to Queue',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue.shade600,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
+                    ),
+                  ),
                 ),
               ],
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: onNavigate,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: const Text('View Details'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _InfoChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-
-  const _InfoChip({
-    required this.icon,
-    required this.label,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
             ),
           ),
         ],
       ),
     );
   }
+
+  Widget _buildInfoCard(
+      IconData icon, String label, String value, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLegend() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'Legend',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 8),
+          _buildLegendItem(Colors.blue.shade700, 'Available'),
+          const SizedBox(height: 4),
+          _buildLegendItem(Colors.orange.shade700, 'Limited'),
+          const SizedBox(height: 4),
+          _buildLegendItem(Colors.green, 'Selected'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLegendItem(Color color, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 11),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStationCount() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.location_on, color: Colors.blue.shade700, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            '${_nearestStations.length} Stations',
+            style: TextStyle(
+              color: Colors.blue.shade700,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Custom painter for map grid
+class _MapGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final gridPaint = Paint()
+      ..color = Colors.grey.withOpacity(0.15)
+      ..strokeWidth = 1;
+
+    // Draw vertical lines
+    for (int i = 0; i < 10; i++) {
+      final x = (size.width / 10) * i;
+      canvas.drawLine(
+        Offset(x, 0),
+        Offset(x, size.height),
+        gridPaint,
+      );
+    }
+
+    // Draw horizontal lines
+    for (int i = 0; i < 10; i++) {
+      final y = (size.height / 10) * i;
+      canvas.drawLine(
+        Offset(0, y),
+        Offset(size.width, y),
+        gridPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// Custom painter for route line
+class _RoutePainter extends CustomPainter {
+  final double startX;
+  final double startY;
+  final double endX;
+  final double endY;
+
+  _RoutePainter({
+    required this.startX,
+    required this.startY,
+    required this.endX,
+    required this.endY,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path();
+    path.moveTo(startX, startY);
+
+    // Create a curved path
+    final midX = (startX + endX) / 2;
+    final midY = (startY + endY) / 2;
+    final controlOffset = 50.0;
+
+    path.quadraticBezierTo(
+      midX - controlOffset,
+      midY,
+      endX,
+      endY,
+    );
+
+    // Draw route line
+    final dashPaint = Paint()
+      ..color = Colors.blue.shade700
+      ..strokeWidth = 4
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawPath(path, dashPaint);
+
+    // Draw arrow at end
+    final arrowPaint = Paint()
+      ..color = Colors.blue.shade700
+      ..style = PaintingStyle.fill;
+
+    final arrowPath = Path();
+    arrowPath.moveTo(endX, endY);
+    arrowPath.lineTo(endX - 10, endY - 15);
+    arrowPath.lineTo(endX + 10, endY - 15);
+    arrowPath.close();
+
+    canvas.drawPath(arrowPath, arrowPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
