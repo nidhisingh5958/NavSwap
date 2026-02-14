@@ -103,7 +103,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/customer/queue',
         name: 'customer-queue',
-        builder: (context, state) => const QueueStatusScreen(),
+        builder: (context, state) {
+          // Extract stationId and userId from query parameters
+          final stationId = state.uri.queryParameters['stationId'] ?? 'ST_101';
+          final userId = state.uri.queryParameters['userId'] ?? 'USR_001';
+          return QueueStatusScreen(
+            stationId: stationId,
+            userId: userId,
+          );
+        },
       ),
       GoRoute(
         path: '/customer/history',

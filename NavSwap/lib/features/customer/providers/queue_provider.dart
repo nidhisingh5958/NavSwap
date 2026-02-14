@@ -58,10 +58,16 @@ class QueueStateNotifier extends StateNotifier<QueueState> {
 
   QueueStateNotifier(this._queueService) : super(QueueState());
 
-  Future<void> joinQueue() async {
+  Future<void> joinQueue({
+    required String stationId,
+    required String userId,
+  }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final response = await _queueService.joinQueue();
+      final response = await _queueService.joinQueue(
+        stationId: stationId,
+        userId: userId,
+      );
       state = state.copyWith(
         isLoading: false,
         qrCode: response['qrCode'],

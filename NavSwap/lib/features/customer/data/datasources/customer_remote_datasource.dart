@@ -26,11 +26,11 @@ abstract class CustomerRemoteDataSource {
 
   Future<StationScoreModel> getStationScore(String stationId);
   Future<StationHealthModel> getStationHealth(String stationId);
-  
-  /// Get AI predictions for a station (on-device inference)
-  Future<StationPredictions?> getAIPredictions(String stationId, Map<String, double> features);
-}
 
+  /// Get AI predictions for a station (on-device inference)
+  Future<StationPredictions?> getAIPredictions(
+      String stationId, Map<String, double> features);
+}
 
 class CustomerRemoteDataSourceImpl implements CustomerRemoteDataSource {
   final DioService dioService;
@@ -79,7 +79,7 @@ class CustomerRemoteDataSourceImpl implements CustomerRemoteDataSource {
     double longitude,
   ) {
     final now = DateTime.now();
-    
+
     // Generate mock stations near the user's location
     final mockStations = [
       StationModel(
@@ -173,12 +173,12 @@ class CustomerRemoteDataSourceImpl implements CustomerRemoteDataSource {
       requestId: 'mock_${now.millisecondsSinceEpoch}',
       userId: userId,
       recommendations: mockStations,
-      explanation: 'Showing nearby stations based on your location. (Offline mode - API unavailable)',
+      explanation:
+          'Showing nearby stations based on your location. (Offline mode - API unavailable)',
       generatedAt: now,
       expiresAt: now.add(const Duration(hours: 1)),
     );
   }
-
 
   @override
   Future<void> recordStationSelection({
@@ -187,7 +187,7 @@ class CustomerRemoteDataSourceImpl implements CustomerRemoteDataSource {
   }) async {
     try {
       await dioService.recommendation.post(
-        '${ApiConstants.recordSelectionEndpoint}/$requestId/select',
+        ApiConstants.recordSelection(requestId),
         data: {'stationId': stationId},
       );
     } on DioException catch (e) {
@@ -202,7 +202,7 @@ class CustomerRemoteDataSourceImpl implements CustomerRemoteDataSource {
   }) async {
     try {
       await dioService.recommendation.post(
-        '${ApiConstants.submitFeedbackEndpoint}/$requestId/feedback',
+        ApiConstants.submitFeedback(requestId),
         data: {'rating': rating},
       );
     } on DioException catch (e) {
@@ -214,7 +214,7 @@ class CustomerRemoteDataSourceImpl implements CustomerRemoteDataSource {
   Future<StationScoreModel> getStationScore(String stationId) async {
     try {
       final response = await dioService.gateway.get(
-        '${ApiConstants.stationScoreEndpoint}/$stationId/score',
+        ApiConstants.getStationScore(stationId),
       );
 
       if (response.statusCode == 200) {
@@ -234,7 +234,7 @@ class CustomerRemoteDataSourceImpl implements CustomerRemoteDataSource {
   Future<StationHealthModel> getStationHealth(String stationId) async {
     try {
       final response = await dioService.gateway.get(
-        '${ApiConstants.stationHealthEndpoint}/$stationId/health',
+        ApiConstants.getStationHealth(stationId),
       );
 
       if (response.statusCode == 200) {
@@ -267,7 +267,7 @@ class CustomerRemoteDataSourceImpl implements CustomerRemoteDataSource {
   /// Get AI predictions using on-device ONNX models
   @override
   Future<StationPredictions?> getAIPredictions(
-    String stationId, 
+    String stationId,
     Map<String, double> features,
   ) async {
     try {

@@ -92,18 +92,20 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
         elevation: 0,
         title: Row(
           children: [
-            // Container(
-            //   padding: const EdgeInsets.all(8),
-            //   decoration: BoxDecoration(
-            //     color: const Color(0xFF000000),
-            //     borderRadius: BorderRadius.circular(12),
-            //   ),
-            //   child: Image.asset(
-            //     'assets/icons/LogoBackgroundRemoved.png',
-            //     fit: BoxFit.contain,
-            //   ),
-            // ),
-            // const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Image.asset(
+                'assets/icons/logo.png',
+                fit: BoxFit.contain,
+                height: 32,
+                width: 32,
+              ),
+            ),
+            const SizedBox(width: 12),
             Text(
               'NAVSWAP',
               style: GoogleFonts.inter(
@@ -195,11 +197,11 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
           }).toList(),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/customer/ai-chat'),
-        icon: const Icon(Icons.auto_awesome),
-        label: const Text('AI Assistant'),
+        tooltip: 'AI Assistant',
         elevation: 6,
+        child: const Icon(Icons.auto_awesome),
       ),
     );
   }
@@ -322,7 +324,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(

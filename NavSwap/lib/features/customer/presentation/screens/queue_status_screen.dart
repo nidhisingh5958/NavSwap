@@ -5,7 +5,14 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../../providers/queue_provider.dart';
 
 class QueueStatusScreen extends ConsumerStatefulWidget {
-  const QueueStatusScreen({Key? key}) : super(key: key);
+  final String stationId;
+  final String userId;
+
+  const QueueStatusScreen({
+    Key? key,
+    required this.stationId,
+    required this.userId,
+  }) : super(key: key);
 
   @override
   ConsumerState<QueueStatusScreen> createState() => _QueueStatusScreenState();
@@ -21,7 +28,10 @@ class _QueueStatusScreenState extends ConsumerState<QueueStatusScreen> {
     super.initState();
     // Join queue when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(queueStateProvider.notifier).joinQueue();
+      ref.read(queueStateProvider.notifier).joinQueue(
+            stationId: widget.stationId,
+            userId: widget.userId,
+          );
     });
 
     // Refresh queue status every 10 seconds
@@ -82,7 +92,10 @@ class _QueueStatusScreenState extends ConsumerState<QueueStatusScreen> {
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () =>
-                    ref.read(queueStateProvider.notifier).joinQueue(),
+                    ref.read(queueStateProvider.notifier).joinQueue(
+                          stationId: widget.stationId,
+                          userId: widget.userId,
+                        ),
                 child: const Text('Retry'),
               ),
             ],
