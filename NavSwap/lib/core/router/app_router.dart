@@ -30,7 +30,7 @@ import '../../features/role/role_selection_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: '/customer/home',
+    initialLocation: '/transporter/dashboard',
     routes: [
       // Splash & Role Selection
       GoRoute(
@@ -170,7 +170,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'transporter-task-detail',
         builder: (context, state) {
           final id = state.pathParameters['id']!;
-          return TaskDetailScreen(taskId: id);
+          final taskData = state.extra as Map<String, dynamic>? ?? {};
+          return TaskDetailScreen(taskData: taskData);
         },
       ),
       GoRoute(
